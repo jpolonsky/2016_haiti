@@ -49,7 +49,7 @@ WrangleData <- function(dept = NULL){
         epiweek_year = paste(year(date), ifelse(nchar(epiweek) == 1, paste0('0', epiweek), epiweek), sep = '-')
       ) %>%
       select(dept, commune, date, month, week_year, epiweek_year, everything())
-
+    
     return(dat)
     
   }
@@ -58,7 +58,7 @@ WrangleData <- function(dept = NULL){
   return(list_dat)
   
 }
-  
+
 list_dat <- map(list_dept[1], WrangleData)
 
 # dat <- 
@@ -69,13 +69,13 @@ list_dat <- map(list_dept[1], WrangleData)
 #   summarise(n = sum(cas_vus_tot))
 
 AnalyseData <- function(data = NULL, variable = NULL){
-
+  
   data %>%
     bind_rows %>%
     filter(date < today()) %>%
     group_by(dept, commune, date, year, month, epiweek_year, epiweek) %>%
     summarise_(n = lazyeval::interp(~sum(var), var = as.name(variable)))
-    
+  
 }
 
 list_variables <- c('cas_vus_tot', 'cas_hosp_tot', 'deces_inst_tot', 'deces_comm_tot', 'deces_tot')
@@ -89,41 +89,45 @@ list_dat <- map(list_variables, AnalyseData, data = list_dat) %>% set_names(list
 # plots
 
 PlotHistYear <- function(data = NULL){
-
+  
   ggplot(data) +
     geom_bar(aes(x = month, y = n, fill = factor(year)), stat = 'identity') +
     scale_fill_viridis(discrete = TRUE) +
     facet_wrap(~year) +
-    ggthemes::theme_tufte()
+    ggthemes::theme_tufte(base_family = 'GillSans')
   
 }
 
 list_hist_year <- map(list_dat, PlotHistYear)
-  
+
 PlotHistCommune <- function(data = NULL){
   
   ggplot(filter(data, year >= 2015)) +
     geom_bar(aes(x = epiweek_year, y = n, fill = commune), stat = 'identity') +
     scale_fill_viridis(discrete = TRUE) +
     facet_wrap(~commune) +
-    ggthemes::theme_tufte()
+    ggthemes::theme_tufte(base_family = 'GillSans')
   
 }
 
 list_hist_commune <- map(list_dat, PlotHistCommune)
 
 # since the hurricane
-list_dat_post_hurr <- map(list_dat, function(data) data %>% filter(year == '2016', epiweek >= 40) %>% mutate(epiweek = factor(epiweek)))
+list_dat_post_hurr <- 
+  map(list_dat, function(data) data %>% filter(year == '2016', epiweek >= 40) %>% mutate(epiweek = factor(epiweek)))
 
 # by day
 PlotHistDayPostHurr <- function(data = NULL){
   
-  ggplot(data, aes(x = date, y = n, fill = commune)) +
-    geom_bar(stat = 'identity') +
-    # geom_text(label = dat_post_hurr %>% group_by(date) %>% summarise(n = sum(n))) +
+  ggplot(data) +
+    geom_bar(aes(x = date, y = n, fill = commune), stat = 'identity') +
+    geom_text(
+      data = data %>% group_by(date) %>% summarise(total = sum(n)), 
+      aes(x = date, y = total + max(total)/50, label = total)
+    ) +
     scale_fill_viridis(discrete = TRUE) +
     labs(x = 'Date', y = '# cases') +
-    ggthemes::theme_tufte()
+    ggthemes::theme_tufte(base_family = 'GillSans')
   
 }
 
@@ -132,11 +136,15 @@ list_hist_day_post_hurr <- map(list_dat_post_hurr, PlotHistDayPostHurr)
 # by week
 PlotHistWeekPostHurr <- function(data = NULL){
   
-  ggplot(data, aes(x = date, y = n, fill = commune)) +
+  ggplot(data) +
     geom_bar(aes(x = epiweek, y = n, fill = commune), stat = 'identity') +
+    geom_text(
+      data = data %>% group_by(epiweek) %>% summarise(total = sum(n)), 
+      aes(x = epiweek, y = total + max(total)/50, label = total)
+    ) +
     scale_fill_viridis(discrete = TRUE) +
     labs(x = 'Epiweek 2016', y = '# cases') +
-    ggthemes::theme_tufte()
+    ggthemes::theme_tufte(base_family = 'GillSans')
   
 }
 
@@ -147,10 +155,14 @@ PlotHistWeekCommunePostHurr <- function(data = NULL){
   
   ggplot(data) +
     geom_bar(aes(x = epiweek, y = n, fill = commune), stat = 'identity') +
+    geom_text(
+      data = data %>% group_by(commune, epiweek) %>% summarise(total = sum(n)), 
+      aes(x = epiweek, y = total + max(total)/25, label = total, size = 0.1)
+    ) +
     scale_fill_viridis(discrete = TRUE) +
     facet_wrap(~commune) +
     labs(x = 'Epiweek 2016', y = '# cases') +
-    ggthemes::theme_tufte()
+    ggthemes::theme_tufte(base_family = 'GillSans')
   
 }
 
