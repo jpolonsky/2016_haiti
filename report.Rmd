@@ -1,0 +1,49 @@
+---
+title: "Rapport sur cholera post-ouragan Matthew"
+author: "Jonathan Polonsky"
+date: '`r format(Sys.Date(), "%d %b %Y")`'
+output:
+  tufte::tufte_handout:
+    latex_engine: pdflatex
+  tufte::tufte_html: default
+link-citations: yes
+subtitle: Situation epidemiologique
+---
+
+```{r, cache=FALSE, message=FALSE, echo=FALSE, warning=FALSE, results='hide'}
+knitr::opts_chunk$set(cache=FALSE, message=FALSE, echo=FALSE, warning=FALSE, results='asis')
+# opts_knit$set(eval.after = "fig.cap")
+
+library(readxl)
+library(stringr)
+library(dplyr)
+library(tidyr)
+library(purrr)
+library(lubridate)
+library(ggplot2)
+library(viridis)
+
+source('functions.R')
+
+# list data sheets to be read in (all communes per dept)
+list_db_paths <- dir('data', full.names = TRUE)
+list_depts <-
+  list_db_paths[str_detect(list_db_paths, 'Surveillance Cholera_2015_2016')] %>% 
+  str_replace_all(c('data/' = '', '[-_]Surveillance Cholera.*' = ''))
+
+list_dat_post_hurr <- map(list_depts, WrangleDataCTC) %>% set_names(list_depts)
+list_hist_day_post_hurr <- map(list_dat_post_hurr, PlotHistDayPostHurrCTC) %>% set_names(list_depts)
+
+```
+
+-	Analyse base de données de diarrhées aigues sévères de la Grand’Anse
+-	Investigation de décès institutionnels a Dame Marie, Recherche active communautaire et reponse
+-	Evaluation de la qualité des données cholera a Dame Marie, Chambellan et Moron
+
+# Analyse des données de diarrhées aigues:
+
+```{r, fig.fullwidth = TRUE, fig.cap = paste0("Tendance des cas de diarrhées aigues, ", list_dat_post_hurr[[1]]$date %>% min %>% format('%d %b %Y'), " - ", list_dat_post_hurr[[1]]$date %>% max %>% format('%d %b %Y'), " Grand’Anse (données partielles).")}
+list_hist_day_post_hurr[[1]]
+```
+
+`r  `
