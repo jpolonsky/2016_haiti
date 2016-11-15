@@ -60,7 +60,6 @@ list_table_post_hurr_CTC <- map(list_dat_post_hurr, MakeTablePostHurrCTC)
 list_hist_post_hurr_day[[list_depts]]
 ```
 
-
 \newpage
 
 \begin{fullwidth}
@@ -69,21 +68,14 @@ list_hist_post_hurr_day[[list_depts]]
 ```{r, tab_overview}
 if(nrow(list_table_post_hurr_CTC[[list_depts]])>1) {rws <- seq(1, nrow(list_table_post_hurr_CTC[[list_depts]]) - 1, by = 2)}
 
-col <- rep("\\rowcolor{whoblue!15}", length(rws))
+# col <- rep("\\rowcolor{whoblue!15}", length(rws))
 
-z <- xtable::xtable(list_table_post_hurr_CTC[[list_depts]], caption = paste0("Répartition des cas de diarrhées aigues par CTC/UTC, ", list_dat_post_hurr[[list_depts]]$date %>% min %>% format('%d %b %Y'), " - ", list_dat_post_hurr[[list_depts]]$date %>% max %>% format('%d %b %Y'), " Grand’Anse (données partielles)."), digits = 0, label = "tab_overview")
-
-print(z, type = 'latex', booktabs = T, caption.placement = "top", add.to.row = list(pos = as.list(rws), command = col), include.rownames=F, comment=F, tabular.environment ='longtable', floating = FALSE)
+list_table_post_hurr_CTC[[list_depts]] %>% 
+  xtable::xtable(
+    caption = paste0("Répartition des cas de diarrhées aigues par CTC/UTC, ", list_dat_post_hurr[[list_depts]]$date %>% min %>% format('%d %b %Y'), " - ", list_dat_post_hurr[[list_depts]]$date %>% max %>% format('%d %b %Y'), " Grand’Anse (données partielles)."), 
+    digits = 0, label = "tab_overview", align = 'lllrrrr'
+  ) %>% 
+  print(booktabs = TRUE, caption.placement = "top", add.to.row = list(pos = as.list(rws), command = rep("\\rowcolor{whoblue!15}", length(rws))), include.rownames = FALSE, comment = FALSE, tabular.environment = 'longtable', floating = FALSE)
 ```
 \end{fullwidth}
 
-<!-- ```{r, out.width='\\textwidth'} -->
-<!-- # library(xtable) -->
-<!-- # print(xtable(list_table_post_hurr_CTC[[list_depts]]), scalebox='0.75') -->
-
-<!-- knitr::kable( -->
-<!--   list_table_post_hurr_CTC[[list_depts]], caption = paste0("Répartition des cas de diarrhées aigues par CTC/UTC, ", list_dat_post_hurr[[list_depts]]$date %>% min %>% format('%d %b %Y'), " - ", list_dat_post_hurr[[list_depts]]$date %>% max %>% format('%d %b %Y'), " Grand’Anse (données partielles).") -->
-<!-- ) -->
-<!-- ``` -->
-
-<!-- \end{landscape} -->

@@ -262,33 +262,51 @@ PlotHistWeekCommunePostHurrCTC <- function(data = NULL){
   
 }
 
+
 # Table
 MakeTablePostHurrCTC <- function(data){
   
   tmp <- 
-    data %>% 
+    data %>%
+    # list_dat_post_hurr[[1]] %>%
     filter(!key == 'cas_hosp') %>%
-    group_by(inst, key) %>% 
+    ungroup() %>% 
+    mutate(inst = ifelse(inst == 'UTC', paste(inst, commune), inst)) %>% 
+    group_by(commune, inst, key) %>% 
     summarise(n = sum(n)) %>% 
-    spread(key, n, drop = F) %>% 
+    spread(key, n) %>% 
     ungroup %>% 
-    bind_rows(
-      summarise(.,
-                inst = 'Total',
-                cas_vus = sum(cas_vus),
-                deces_comm = sum(deces_comm),
-                deces_inst = sum(deces_inst)
-      )
-    ) %>% 
     mutate(
       `% cas` = round(cas_vus/sum(cas_vus)*100, 1),
       `% deces_inst` = round(deces_inst/sum(deces_inst)*100, 1),
       `% deces_comm` = round(deces_comm/sum(deces_comm)*100, 1)
     ) %>% 
-    select(1:2, 5, 4, 6, 3, 7) %>% 
-    mutate(deces_tot = deces_inst + deces_comm) %>% 
-    set_names(c('UTC/CTC', 'Cas', '% cas', 'Décès inst.', '% décès inst.', 'Décès comm.', '% décès comm', 'Total décès'))
- 
+    select(1:3, 6, 5, 7, 4, 8) %>% 
+    bind_rows(
+      summarise(.,
+                commune = 'Total',
+                inst = '-',
+                cas_vus = sum(cas_vus, na.rm = TRUE),
+                `% cas` = round(cas_vus/sum(cas_vus, na.rm = TRUE)*100, 1),
+                deces_comm = sum(deces_comm, na.rm = TRUE),
+                `% deces_comm` = round(deces_comm/sum(deces_comm, na.rm = TRUE)*100, 1),
+                deces_inst = sum(deces_inst, na.rm = TRUE),
+                `% deces_inst` = round(deces_inst/sum(deces_inst, na.rm = TRUE)*100, 1)
+      )
+    ) %>% 
+    mutate(
+      deces_tot = deces_inst + deces_comm,
+      `% cas` = paste0('(', `% cas`, ')'),
+      `% deces_inst` = paste0('(', `% deces_inst`, ')'),
+      `% deces_comm` = paste0('(', `% deces_comm`, ')')
+    ) %>% 
+    unite(cas_vus, cas_vus:`% cas`, sep = ' ') %>% 
+    unite(deces_inst, deces_inst:`% deces_inst`, sep = ' ') %>% 
+    unite(deces_comm, deces_comm:`% deces_comm`, sep = ' ') %>% 
+    # set_names(c('Commune', 'UTC/CTC', 'Cas', '% cas', 'Décès inst.', '% décès inst.', 'Décès comm.', '% décès comm', 'Total décès'))
+    set_names(c('Commune', 'UTC/CTC', 'Cas (%)', 'Décès inst. (%)', 'Décès comm. (%)', 'Total décès'))
+    
+  
   return(tmp)
    
 }
