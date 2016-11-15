@@ -56,7 +56,7 @@ list_hist_post_hurr_week <- map(list_dat_post_hurr, PlotHistWeekPostHurrCTC) %>%
 
 # by week & inst
 list_hist_post_hurr_week_inst <- map(list_dat_post_hurr, PlotHistWeekCommunePostHurrCTC)
-
+PlotHistWeekCommunePostHurrCTC(list_dat_post_hurr[[1]])
 
 # tables
 list_table_post_hurr_CTC <- map(list_dat_post_hurr, MakeTablePostHurrCTC)  

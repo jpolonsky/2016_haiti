@@ -197,9 +197,8 @@ WrangleDataCTC <- function(dept = NULL){
 PlotHistDayPostHurrCTC <- function(data = NULL){
   
   ggplot(
-    data %>% 
-      filter(key %in% 'cas_vus')
-  ) +
+    data %>% filter(key %in% 'cas_vus')
+    ) +
     geom_bar(aes(x = date, y = n), stat = 'identity') +
     # geom_bar(aes(x = date, y = n, fill = inst), stat = 'identity') +
     # scale_fill_viridis(discrete = TRUE) +
@@ -212,14 +211,13 @@ PlotHistDayPostHurrCTC <- function(data = NULL){
       aes(x = date, y = total + max(total)/50, label = total), size = 1
     ) +
     labs(x = 'Date', y = '# cases') +
-    ggthemes::theme_tufte() +
+    ggthemes::theme_tufte(base_family = 'Palatino') +
     # theme_bw() +
     theme(
-      axis.title = element_text(size = 4), 
-      axis.text = element_text(size = 3),
+      axis.title = element_text(size = 6), 
+      axis.text = element_text(size = 5),
       axis.ticks = element_blank()
     ) 
-  
   
 }
 
@@ -244,7 +242,7 @@ PlotHistWeekPostHurrCTC <- function(data = NULL){
   
 }
 
-PlotHistWeekCommunePostHurrCTC <- function(data = NULL){
+PlotHistWeekInstPostHurrCTC <- function(data = NULL){
   
   tmp <- 
     data %>% 
@@ -257,11 +255,47 @@ PlotHistWeekCommunePostHurrCTC <- function(data = NULL){
     facet_wrap(~inst) +
     labs(x = 'Epiweek 2016', y = '# cases') +
     theme(legend.position = 'none', axis.line = element_line(color = "black")) +
-    # ggthemes::theme_tufte() 
-    theme_bw()
+    ggthemes::theme_tufte() +
+    # theme_bw() +
+    theme(
+      legend.position = 'none', 
+      axis.line = element_line(color = "black"),
+      axis.title = element_text(size = 6), 
+      axis.text = element_text(size = 5),
+      strip.text = element_text(size = 5),
+      axis.ticks = element_blank()
+    )
   
 }
 
+
+PlotHistWeekCommunePostHurrCTC <- function(data = NULL){
+    
+  tmp <- 
+    data %>% 
+    mutate(epiweek = epitools::as.week(date)[['week']]) %>%
+    group_by(inst, commune, epiweek, key) %>%
+    summarise(n = sum(n))
+  
+  ggplot(tmp) +
+    geom_bar(aes(x = epiweek, y = n), stat = 'identity') +
+    facet_wrap(~ commune) +
+    labs(x = 'Epiweek 2016', y = '# cases') +
+    # ggthemes::theme_tufte(base_family = 'Open Sans') +
+    # ggthemes::theme_tufte(base_family = 'GillSans') +
+    # ggthemes::theme_tufte(base_family = 'Helvetica') +
+    ggthemes::theme_tufte(base_family = 'Palatino') +
+    # theme_bw() +
+    theme(
+      legend.position = 'none', 
+      axis.line = element_line(color = "black"),
+      axis.title = element_text(size = 6), 
+      axis.text = element_text(size = 5),
+      strip.text = element_text(size = 5),
+      axis.ticks = element_blank()
+    )
+  
+}
 
 # Table
 MakeTablePostHurrCTC <- function(data){

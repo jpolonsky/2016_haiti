@@ -43,11 +43,14 @@ list_dat_post_hurr <- map(list_depts, WrangleDataCTC) %>% set_names(list_depts)
 # plot by day
 list_hist_post_hurr_day <- map(list_dat_post_hurr, PlotHistDayPostHurrCTC) %>% set_names(list_depts)
 
+# by week & commune
+list_hist_post_hurr_week_commune <- map(list_dat_post_hurr, PlotHistWeekCommunePostHurrCTC) %>% set_names(list_depts)
+
 # by week & inst
-list_hist_post_hurr_week_inst <- map(list_dat_post_hurr, PlotHistWeekCommunePostHurrCTC)
+list_hist_post_hurr_week_CTC <- map(list_dat_post_hurr, PlotHistWeekInstPostHurrCTC) %>% set_names(list_depts)
 
 # tables
-list_table_post_hurr_CTC <- map(list_dat_post_hurr, MakeTablePostHurrCTC)  
+list_table_post_hurr_CTC <- map(list_dat_post_hurr, MakeTablePostHurrCTC) %>% set_names(list_depts)
 ```
 
 -	Analyse base de données de diarrhées aigues sévères de la Grand’Anse
@@ -68,8 +71,6 @@ list_hist_post_hurr_day[[list_depts]]
 ```{r, tab_overview}
 if(nrow(list_table_post_hurr_CTC[[list_depts]])>1) {rws <- seq(1, nrow(list_table_post_hurr_CTC[[list_depts]]) - 1, by = 2)}
 
-# col <- rep("\\rowcolor{whoblue!15}", length(rws))
-
 list_table_post_hurr_CTC[[list_depts]] %>% 
   xtable::xtable(
     caption = paste0("Répartition des cas de diarrhées aigues par CTC/UTC, ", list_dat_post_hurr[[list_depts]]$date %>% min %>% format('%d %b %Y'), " - ", list_dat_post_hurr[[list_depts]]$date %>% max %>% format('%d %b %Y'), " Grand’Anse (données partielles)."), 
@@ -79,3 +80,14 @@ list_table_post_hurr_CTC[[list_depts]] %>%
 ```
 \end{fullwidth}
 
+\newpage
+
+```{r, fig.fullwidth = TRUE, fig.height=4, fig.cap = paste0("Tendance des cas de diarrhées aigues, ", list_dat_post_hurr[[list_depts]]$date %>% min %>% format('%d %b %Y'), " - ", list_dat_post_hurr[[list_depts]]$date %>% max %>% format('%d %b %Y'), " par commune, Grand’Anse (données partielles).")}
+list_hist_post_hurr_week_commune[[list_depts]]
+```
+
+\newpage
+
+```{r, fig.fullwidth = TRUE, fig.height=5.5, fig.cap = paste0("Tendance des cas de diarrhées aigues, ", list_dat_post_hurr[[list_depts]]$date %>% min %>% format('%d %b %Y'), " - ", list_dat_post_hurr[[list_depts]]$date %>% max %>% format('%d %b %Y'), " par CTC, Grand’Anse (données partielles).")}
+list_hist_post_hurr_week_CTC[[list_depts]]
+```
