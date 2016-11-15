@@ -1,18 +1,25 @@
 ---
-title: "Rapport sur cholera post-ouragan Matthew"
-author: "Jonathan Polonsky"
-date: '`r format(Sys.Date(), "%d %b %Y")`'
 output:
   tufte::tufte_handout:
     latex_engine: pdflatex
+    pandoc_args: [
+      '--include-in-header', 'styles.sty', 
+      '--include-before-body', 'titlepage.tex'
+    ]
   tufte::tufte_html: default
 link-citations: yes
 subtitle: Situation epidemiologique
+params:
+  dep_san: DSGA
+header-includes:
+   - \usepackage{pdflscape}
 ---
 
 ```{r, cache=FALSE, message=FALSE, echo=FALSE, warning=FALSE, results='hide'}
 knitr::opts_chunk$set(cache=FALSE, message=FALSE, echo=FALSE, warning=FALSE, results='asis')
-# opts_knit$set(eval.after = "fig.cap")
+knitr::knit_hooks$set(inline = function(x) if (is.numeric(x)) round(x, 1) )
+
+list_depts <- params$dep_san
 
 library(readxl)
 library(stringr)
@@ -27,13 +34,20 @@ source('functions.R')
 
 # list data sheets to be read in (all communes per dept)
 list_db_paths <- dir('data', full.names = TRUE)
-list_depts <-
-  list_db_paths[str_detect(list_db_paths, 'Surveillance Cholera_2015_2016')] %>% 
-  str_replace_all(c('data/' = '', '[-_]Surveillance Cholera.*' = ''))
+# list_depts <-
+  # list_db_paths[str_detect(list_db_paths, 'Surveillance Cholera_2015_2016')] %>% 
+  # str_replace_all(c('data/' = '', '[-_]Surveillance Cholera.*' = ''))
 
 list_dat_post_hurr <- map(list_depts, WrangleDataCTC) %>% set_names(list_depts)
-list_hist_day_post_hurr <- map(list_dat_post_hurr, PlotHistDayPostHurrCTC) %>% set_names(list_depts)
 
+# plot by day
+list_hist_post_hurr_day <- map(list_dat_post_hurr, PlotHistDayPostHurrCTC) %>% set_names(list_depts)
+
+# by week & inst
+list_hist_post_hurr_week_inst <- map(list_dat_post_hurr, PlotHistWeekCommunePostHurrCTC)
+
+# tables
+list_table_post_hurr_CTC <- map(list_dat_post_hurr, MakeTablePostHurrCTC)  
 ```
 
 -	Analyse base de données de diarrhées aigues sévères de la Grand’Anse
@@ -42,8 +56,34 @@ list_hist_day_post_hurr <- map(list_dat_post_hurr, PlotHistDayPostHurrCTC) %>% s
 
 # Analyse des données de diarrhées aigues:
 
-```{r, fig.fullwidth = TRUE, fig.cap = paste0("Tendance des cas de diarrhées aigues, ", list_dat_post_hurr[[1]]$date %>% min %>% format('%d %b %Y'), " - ", list_dat_post_hurr[[1]]$date %>% max %>% format('%d %b %Y'), " Grand’Anse (données partielles).")}
-list_hist_day_post_hurr[[1]]
+```{r, fig.fullwidth = TRUE, fig.cap = paste0("Tendance des cas de diarrhées aigues, ", list_dat_post_hurr[[list_depts]]$date %>% min %>% format('%d %b %Y'), " - ", list_dat_post_hurr[[list_depts]]$date %>% max %>% format('%d %b %Y'), " Grand’Anse (données partielles).")}
+list_hist_post_hurr_day[[list_depts]]
 ```
 
-`r  `
+
+\newpage
+
+\begin{fullwidth}
+\makeatletter\setlength\hsize{\@tufte@fullwidth}\setlength\linewidth{\@tufte@fullwidth}\let\caption\@tufte@orig@caption\makeatother
+\footnotesize
+```{r, tab_overview}
+if(nrow(list_table_post_hurr_CTC[[list_depts]])>1) {rws <- seq(1, nrow(list_table_post_hurr_CTC[[list_depts]]) - 1, by = 2)}
+
+col <- rep("\\rowcolor{whoblue!15}", length(rws))
+
+z <- xtable::xtable(list_table_post_hurr_CTC[[list_depts]], caption = paste0("Répartition des cas de diarrhées aigues par CTC/UTC, ", list_dat_post_hurr[[list_depts]]$date %>% min %>% format('%d %b %Y'), " - ", list_dat_post_hurr[[list_depts]]$date %>% max %>% format('%d %b %Y'), " Grand’Anse (données partielles)."), digits = 0, label = "tab_overview")
+
+print(z, type = 'latex', booktabs = T, caption.placement = "top", add.to.row = list(pos = as.list(rws), command = col), include.rownames=F, comment=F, tabular.environment ='longtable', floating = FALSE)
+```
+\end{fullwidth}
+
+<!-- ```{r, out.width='\\textwidth'} -->
+<!-- # library(xtable) -->
+<!-- # print(xtable(list_table_post_hurr_CTC[[list_depts]]), scalebox='0.75') -->
+
+<!-- knitr::kable( -->
+<!--   list_table_post_hurr_CTC[[list_depts]], caption = paste0("Répartition des cas de diarrhées aigues par CTC/UTC, ", list_dat_post_hurr[[list_depts]]$date %>% min %>% format('%d %b %Y'), " - ", list_dat_post_hurr[[list_depts]]$date %>% max %>% format('%d %b %Y'), " Grand’Anse (données partielles).") -->
+<!-- ) -->
+<!-- ``` -->
+
+<!-- \end{landscape} -->

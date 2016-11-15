@@ -174,16 +174,16 @@ WrangleDataCTC <- function(dept = NULL){
     separate(key, c('date', 'key'), ':') %>% 
     mutate(
       inst = str_trim(inst),
-      date = as.Date(date),
+      date = ymd(date),
       key = str_replace_all(key, fixed('_<5'), ''),
       key = str_replace_all(key, fixed('_5+'), ''),
-      key = str_replace_all(key, 'deces.*', 'deces'),
+      # key = str_replace_all(key, 'deces.*', 'deces'),
       value = as.numeric(value)
     ) %>% 
     filter(
       !is.na(inst),
       inst != 'TOTAL',
-      date >= '2016-10-03',
+      date >= ymd('2016-10-03'),
       date < today()
     ) %>% 
     group_by(inst, commune, date, key) %>% 
@@ -192,6 +192,7 @@ WrangleDataCTC <- function(dept = NULL){
   return(dat_post_hurr)
   
 }
+
 
 PlotHistDayPostHurrCTC <- function(data = NULL){
   
@@ -220,4 +221,74 @@ PlotHistDayPostHurrCTC <- function(data = NULL){
     ) 
   
   
+}
+
+PlotHistWeekPostHurrCTC <- function(data = NULL){
+  
+  tmp <- 
+    data %>% 
+    mutate(epiweek = epitools::as.week(date)[['week']]) %>%
+    group_by(inst, commune, epiweek, key) %>%
+    summarise(n = sum(n))
+  
+  ggplot(tmp) +
+    geom_bar(aes(x = epiweek, y = n), stat = 'identity') +
+    # geom_bar(aes(x = epiweek, y = n, fill = commune), stat = 'identity') +
+    # scale_fill_viridis(discrete = TRUE) +
+    geom_text(
+      data = tmp %>% group_by(epiweek) %>% summarise(total = sum(n)), 
+      aes(x = epiweek, y = total + max(total)/50, label = total), size = 1
+    ) +
+    labs(x = 'Epiweek 2016', y = '# cases') +
+    ggthemes::theme_tufte()
+  
+}
+
+PlotHistWeekCommunePostHurrCTC <- function(data = NULL){
+  
+  tmp <- 
+    data %>% 
+    mutate(epiweek = epitools::as.week(date)[['week']]) %>%
+    group_by(inst, commune, epiweek, key) %>%
+    summarise(n = sum(n))
+  
+  ggplot(tmp) +
+    geom_bar(aes(x = epiweek, y = n), stat = 'identity') +
+    facet_wrap(~inst) +
+    labs(x = 'Epiweek 2016', y = '# cases') +
+    theme(legend.position = 'none', axis.line = element_line(color = "black")) +
+    # ggthemes::theme_tufte() 
+    theme_bw()
+  
+}
+
+# Table
+MakeTablePostHurrCTC <- function(data){
+  
+  tmp <- 
+    data %>% 
+    filter(!key == 'cas_hosp') %>%
+    group_by(inst, key) %>% 
+    summarise(n = sum(n)) %>% 
+    spread(key, n, drop = F) %>% 
+    ungroup %>% 
+    bind_rows(
+      summarise(.,
+                inst = 'Total',
+                cas_vus = sum(cas_vus),
+                deces_comm = sum(deces_comm),
+                deces_inst = sum(deces_inst)
+      )
+    ) %>% 
+    mutate(
+      `% cas` = round(cas_vus/sum(cas_vus)*100, 1),
+      `% deces_inst` = round(deces_inst/sum(deces_inst)*100, 1),
+      `% deces_comm` = round(deces_comm/sum(deces_comm)*100, 1)
+    ) %>% 
+    select(1:2, 5, 4, 6, 3, 7) %>% 
+    mutate(deces_tot = deces_inst + deces_comm) %>% 
+    set_names(c('UTC/CTC', 'Cas', '% cas', 'Décès inst.', '% décès inst.', 'Décès comm.', '% décès comm', 'Total décès'))
+ 
+  return(tmp)
+   
 }
