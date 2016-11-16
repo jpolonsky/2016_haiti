@@ -242,9 +242,9 @@ MakeTable <- function(data){
     spread(key, n) %>% 
     ungroup %>% 
     mutate(
-      `% cas` = round(cas_vus/sum(cas_vus)*100, 1),
-      `% deces_inst` = round(deces_inst/sum(deces_inst)*100, 1),
-      `% deces_comm` = round(deces_comm/sum(deces_comm)*100, 1)
+      `% cas` = round(cas_vus/sum(cas_vus)*100, 1) %>% ifelse(is.nan(.), 0, .),
+      `% deces_inst` = round(deces_inst/sum(deces_inst)*100, 1) %>% ifelse(is.nan(.), 0, .),
+      `% deces_comm` = round(deces_comm/sum(deces_comm)*100, 1) %>% ifelse(is.nan(.), 0, .)
     ) %>% 
     select(1:3, 6, 5, 7, 4, 8) %>% 
     bind_rows(
@@ -278,7 +278,7 @@ MakeTable <- function(data){
 
 
 WrangleDataMapPopAR <- function(data = NULL) {
-  
+  # browser()
   library(rgeos)
   library(maptools)
   # maptools::gpclibPermit()
@@ -286,21 +286,28 @@ WrangleDataMapPopAR <- function(data = NULL) {
   map_haiti@data$id <- rownames(map_haiti@data)
   df_map_haiti <- 
     fortify(map_haiti, region = 'id') %>% 
-    inner_join(map_haiti@data, by = 'id')
+    inner_join(map_haiti@data, by = 'id') %>% 
+    tbl_df
   
   df_commune_sheets <-
     data_frame(commune = c('DSGA', 'DSS'), sheet = c('Dept_Grand anse', 'Dept_Sud'))
   
   dat <- 
     df_map_haiti %>%
-    tbl_df %>%
-    mutate(NAME_3 = str_replace_all(NAME_3, "é", 'e')) %>% 
+    mutate(
+      NAME_3 = str_replace_all(NAME_3, "-", ' '),
+      NAME_3 = str_replace_all(NAME_3, "é|è", 'e'),
+      NAME_3 = str_replace_all(NAME_3, "à|â", 'a'),
+      NAME_3 = str_replace_all(NAME_3, " A ", ' a '),
+      NAME_3 = str_replace_all(NAME_3, "ô", 'o'),
+      NAME_3 = str_replace_all(NAME_3, "Saint", 'St.')
+    ) %>% 
     inner_join(
       data %>% 
         mutate(commune = str_replace_all(commune, "-", ' ')) %>% 
         group_by(commune) %>% 
         summarise(cases = sum(n)) %>% 
-        inner_join(    
+        full_join(    
           read_excel(
             'data/population.xlsx', 
             sheet = df_commune_sheets$sheet[df_commune_sheets$commune == unique(data$dept)],
@@ -309,9 +316,17 @@ WrangleDataMapPopAR <- function(data = NULL) {
             set_names(c('commune', 'pop')) %>% 
             filter(str_detect(commune, 'Commune')) %>% 
             mutate(
-              commune = str_replace_all(commune, "[1-9].*Commune (des|d'|de)", '') %>% str_trim(),
-              commune = str_replace_all(commune, "é", 'e'),
+              commune = str_replace_all(commune, "-", ' '), 
+              commune = str_replace_all(commune, ".*Commune (des|d'|de)", '') %>% str_trim(),
+              commune = str_replace_all(commune, "é|è", 'e'),
+              commune = str_replace_all(commune, "à|â", 'a'),
+              commune = str_replace_all(commune, " A ", ' a '),
+              commune = str_replace_all(commune, "ô", 'o'),
+              commune = str_replace_all(commune, "Cayes", 'Les Cayes'),
               commune = str_replace_all(commune, "Irois", 'Les Irois'),
+              commune = str_replace_all(commune, "Anglais", 'Les Anglais'),
+              commune = str_replace_all(commune, "l'Île", 'Ile'),
+              commune = str_replace_all(commune, "Saint", 'St.'),
               pop = str_replace_all(pop, ' ', ''),
               pop = as.numeric(pop)
             ), 
@@ -330,7 +345,7 @@ MakeMapAR <- function(data){
     geom_polygon(aes(long, lat, group = group, fill = ar), colour = 'white', size = .2) +
     coord_equal() +
     ggthemes::theme_tufte(base_family = 'Palatino') +
-    scale_fill_gradient(name = "TA (#/10,000)", low = 'lightyellow', high = 'darkred', labels = scales::comma) +
+    scale_fill_gradient(name = "TA (#/10,000)", low = 'lightyellow', high = 'darkred', na.value = "lightgrey", labels = scales::comma) +
     # viridis::scale_fill_viridis(labels = scales::comma) +
     theme(
       legend.title = element_text(size = 6, face = 'bold'),

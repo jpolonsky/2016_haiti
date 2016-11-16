@@ -14,8 +14,6 @@ params:
 knitr::opts_chunk$set(cache=FALSE, message=FALSE, echo=FALSE, warning=FALSE, results='asis')
 knitr::knit_hooks$set(inline = function(x) if (is.numeric(x)) round(x, 1) )
 
-list_depts <- params$dep_san
-
 library(readxl)
 library(stringr)
 library(dplyr)
@@ -26,32 +24,14 @@ library(ggplot2)
 
 source('functions.R')
 
-# list data sheets to be read in (all communes per dept)
 list_db_paths <- dir('data', full.names = TRUE)
 # list_depts <-
-  # list_db_paths[str_detect(list_db_paths, 'Surveillance Cholera_2015_2016')] %>% 
-  # str_replace_all(c('data/' = '', '[-_]Surveillance Cholera.*' = ''))
+#   list_db_paths[str_detect(list_db_paths, 'Surveillance Cholera_2015_2016')] %>%
+#   str_replace_all(c('data/' = '', '[-_]Surveillance Cholera.*' = ''))
+list_depts <- params$dep_san
 
 list_dat <- map(list_depts, WrangleData) %>% set_names(list_depts)
-
-# plot by day
-list_hist_day <- map(list_dat, PlotHistDay)
-
-# by week & commune
-list_hist_week_commune <- map(list_dat, PlotHistWeekCommune)
-
-# by day & inst
-list_hist_day_inst <- map(list_dat, PlotHistDayInst)
-
-# # by week & inst
-# list_hist_week <- map(list_dat, PlotHistWeekInst)
-
-# tables
-list_table <- map(list_dat, MakeTable)
-
-# map
 list_df_map <- map(list_dat, WrangleDataMapPopAR)
-list_map <- map(list_df_map, MakeMapAR)
 ```
 
 <!-- -	Analyse base de données de diarrhées aigues sévères de la Grand’Anse -->
@@ -61,6 +41,8 @@ list_map <- map(list_df_map, MakeMapAR)
 # Analyse des données de diarrhées aigues:
 
 ```{r, fig.fullwidth = TRUE, fig.cap = paste0("Tendance des cas de diarrhées aigues, ", list_dat[[list_depts]]$date %>% min %>% format('%d %b %Y'), " - ", list_dat[[list_depts]]$date %>% max %>% format('%d %b %Y'), " Grand’Anse (données partielles).")}
+# plot by day
+list_hist_day <- map(list_dat, PlotHistDay)
 list_hist_day[[list_depts]]
 ```
 
@@ -70,6 +52,8 @@ list_hist_day[[list_depts]]
 \makeatletter\setlength\hsize{\@tufte@fullwidth}\setlength\linewidth{\@tufte@fullwidth}\let\caption\@tufte@orig@caption\makeatother
 \footnotesize
 ```{r, tab_overview}
+list_table <- map(list_dat, MakeTable)
+
 if(nrow(list_table[[list_depts]])>1) {rws <- seq(1, nrow(list_table[[list_depts]]) - 1, by = 2)}
 
 list_table[[list_depts]] %>% 
@@ -83,18 +67,23 @@ list_table[[list_depts]] %>%
 
 \newpage
 
-```{r, fig.fullwidth = TRUE, fig.height=4, fig.cap = paste0("Répresentation du taux d'attaque des cas de diarrhées aigues par 10,000 personnes, ", list_dat[[list_depts]]$date %>% min %>% format('%d %b %Y'), " - ", list_dat[[list_depts]]$date %>% max %>% format('%d %b %Y'), " par commune, Grand’Anse (données partielles).")}
+```{r, fig.fullwidth = TRUE, fig.height=5, fig.cap = paste0("Répresentation du taux d'attaque des cas de diarrhées aigues par 10,000 personnes, ", list_dat[[list_depts]]$date %>% min %>% format('%d %b %Y'), " - ", list_dat[[list_depts]]$date %>% max %>% format('%d %b %Y'), " par commune, Grand’Anse (données partielles).")}
+list_map <- map(list_df_map, MakeMapAR)
 list_map[[list_depts]]
 ```
 
 \newpage
 
 ```{r, fig.fullwidth = TRUE, fig.height=4, fig.cap = paste0("Tendance des cas de diarrhées aigues, ", list_dat[[list_depts]]$date %>% min %>% format('%d %b %Y'), " - ", list_dat[[list_depts]]$date %>% max %>% format('%d %b %Y'), " par commune, Grand’Anse (données partielles).")}
+# by week & commune
+list_hist_week_commune <- map(list_dat, PlotHistWeekCommune)
 list_hist_week_commune[[list_depts]]
 ```
 
 \newpage
 
 ```{r, fig.fullwidth = TRUE, fig.height=4, fig.cap = paste0("Tendance des cas de diarrhées aigues, ", list_dat[[list_depts]]$date %>% min %>% format('%d %b %Y'), " - ", list_dat[[list_depts]]$date %>% max %>% format('%d %b %Y'), " par CTC, Grand’Anse (données partielles).")}
+# by day & inst
+list_hist_day_inst <- map(list_dat, PlotHistDayInst)
 list_hist_day_inst[[list_depts]]
 ```

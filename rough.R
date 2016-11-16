@@ -8,7 +8,7 @@ library(tidyr)
 library(purrr)
 library(lubridate)
 library(ggplot2)
-library(viridis)
+# library(viridis)
 library(extrafont)
 
 source('functions.R')
@@ -49,24 +49,28 @@ list_depts <-
   str_replace_all(c('data/' = '', '[-_]Surveillance Cholera.*' = ''))
 
 list_depts <- 'DSGA'
+list_depts <- 'DSS'
 
 list_dat <- map(list_depts, WrangleData) %>% set_names(list_depts)
 
 # plot by day
-list_hist_day <- map(list_dat, PlotHistDay) %>% set_names(list_depts)
+list_hist_day <- map(list_dat, PlotHistDay)
 
 # by day & inst
-list_hist_day_inst <- map(list_dat, PlotHistDayInst) %>% set_names(list_depts)
+list_hist_day_inst <- map(list_dat, PlotHistDayInst)
 
 # plot by epiweek
-list_hist_week <- map(list_dat, PlotHistWeek) %>% set_names(list_depts)
+list_hist_week <- map(list_dat, PlotHistWeek)
 
-# by epiweek & inst
-list_hist_week_inst <- map(list_dat, PlotHistWeekInst) %>% set_names(list_depts)
+# by week & commune
+list_hist_week_commune <- map(list_dat, PlotHistWeekCommune)
+
+# by week & inst
+list_hist_week_inst <- map(list_dat, PlotHistWeekInst)
 
 
 # tables
-list_table <- map(list_dat, MakeTable) %>% set_names(list_depts)
+list_table <- map(list_dat, MakeTable)
 
 
 # maps
