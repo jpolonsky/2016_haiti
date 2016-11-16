@@ -35,6 +35,7 @@ WrangleData <- function(dept = NULL){
     dat %>%
     separate(key, c('date', 'key'), ':') %>% 
     mutate(
+      dept = dept,
       inst = str_trim(inst),
       date = ymd(date),
       key = str_replace_all(key, fixed('_<5'), ''),
@@ -48,8 +49,9 @@ WrangleData <- function(dept = NULL){
       date >= ymd('2016-10-03'),
       date < today()
     ) %>% 
-    group_by(inst, commune, date, key) %>% 
-    summarise(n = sum(value, na.rm = TRUE))
+    group_by(dept, inst, commune, date, key) %>% 
+    summarise(n = sum(value, na.rm = TRUE)) %>% 
+    ungroup
   
   return(dat_post_hurr)
   
@@ -154,15 +156,16 @@ PlotHistWeekCommune <- function(data = NULL){
     group_by(commune, epiweek) %>%
     summarise(n = sum(n))
   
-  exclude <- 
-    dat %>% 
-    group_by(commune) %>% 
-    summarise(n = sum(n)) %>% 
-    filter(n == 0) %>% 
-    c
+  # exclude <- 
+  #   dat %>% 
+  #   group_by(commune) %>% 
+  #   summarise(n = sum(n)) %>% 
+  #   filter(n == 0) %>% 
+  #   c
   
   ggplot(
-    dat %>% filter(!commune %in% exclude$commune)
+    # dat %>% filter(!commune %in% exclude$commune)
+    dat
   ) +
     geom_bar(aes(x = epiweek, y = n), stat = 'identity') +
     facet_wrap(~ commune) +
@@ -271,4 +274,71 @@ MakeTable <- function(data){
   
   return(tmp)
    
+}
+
+
+WrangleDataMapPopAR <- function(data = NULL) {
+  
+  library(rgeos)
+  library(maptools)
+  # maptools::gpclibPermit()
+  map_haiti <- rgdal::readOGR(dsn = 'map', layer = 'HTI_adm3')
+  map_haiti@data$id <- rownames(map_haiti@data)
+  df_map_haiti <- 
+    fortify(map_haiti, region = 'id') %>% 
+    inner_join(map_haiti@data, by = 'id')
+  
+  df_commune_sheets <-
+    data_frame(commune = c('DSGA', 'DSS'), sheet = c('Dept_Grand anse', 'Dept_Sud'))
+  
+  dat <- 
+    df_map_haiti %>%
+    tbl_df %>%
+    mutate(NAME_3 = str_replace_all(NAME_3, "é", 'e')) %>% 
+    inner_join(
+      data %>% 
+        mutate(commune = str_replace_all(commune, "-", ' ')) %>% 
+        group_by(commune) %>% 
+        summarise(cases = sum(n)) %>% 
+        inner_join(    
+          read_excel(
+            'data/population.xlsx', 
+            sheet = df_commune_sheets$sheet[df_commune_sheets$commune == unique(data$dept)],
+            skip = 4) %>% 
+            select(c(1, 3)) %>% 
+            set_names(c('commune', 'pop')) %>% 
+            filter(str_detect(commune, 'Commune')) %>% 
+            mutate(
+              commune = str_replace_all(commune, "[1-9].*Commune (des|d'|de)", '') %>% str_trim(),
+              commune = str_replace_all(commune, "é", 'e'),
+              commune = str_replace_all(commune, "Irois", 'Les Irois'),
+              pop = str_replace_all(pop, ' ', ''),
+              pop = as.numeric(pop)
+            ), 
+          by = 'commune') %>% 
+        mutate(ar = cases/pop*10000), 
+      by = c('NAME_3' = 'commune'))
+  
+  return(dat)
+  
+}
+
+
+MakeMapAR <- function(data){
+  
+  ggplot(data) +
+    geom_polygon(aes(long, lat, group = group, fill = ar), colour = 'white', size = .2) +
+    coord_equal() +
+    ggthemes::theme_tufte(base_family = 'Palatino') +
+    scale_fill_gradient(name = "TA (#/10,000)", low = 'lightyellow', high = 'darkred', labels = scales::comma) +
+    # viridis::scale_fill_viridis(labels = scales::comma) +
+    theme(
+      legend.title = element_text(size = 6, face = 'bold'),
+      legend.text = element_text(size = 5),
+      axis.title = element_text(size = 6, face = 'bold'),
+      axis.text = element_text(size = 5),
+      axis.ticks = element_blank()
+    ) +
+    labs(x = 'Longitude', y = 'Latitude')
+  
 }

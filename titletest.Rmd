@@ -1,0 +1,14 @@
+---
+output:
+  tufte::tufte_handout:
+    latex_engine: pdflatex
+    pandoc_args: [
+      '--include-in-header', 'styles.sty', 
+      '--include-before-body', 'titlepage.tex'
+    ]
+  tufte::tufte_html: default
+link-citations: yes
+subtitle: Situation epidemiologique
+params:
+  dep_san: DSGA
+---
