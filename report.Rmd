@@ -11,8 +11,6 @@ link-citations: yes
 subtitle: Situation epidemiologique
 params:
   dep_san: DSGA
-header-includes:
-   - \usepackage{pdflscape}
 ---
 
 ```{r, cache=FALSE, message=FALSE, echo=FALSE, warning=FALSE, results='hide'}
@@ -28,7 +26,6 @@ library(tidyr)
 library(purrr)
 library(lubridate)
 library(ggplot2)
-library(viridis)
 
 source('functions.R')
 
@@ -38,29 +35,32 @@ list_db_paths <- dir('data', full.names = TRUE)
   # list_db_paths[str_detect(list_db_paths, 'Surveillance Cholera_2015_2016')] %>% 
   # str_replace_all(c('data/' = '', '[-_]Surveillance Cholera.*' = ''))
 
-list_dat_post_hurr <- map(list_depts, WrangleDataCTC) %>% set_names(list_depts)
+list_dat <- map(list_depts, WrangleData) %>% set_names(list_depts)
 
 # plot by day
-list_hist_post_hurr_day <- map(list_dat_post_hurr, PlotHistDayPostHurrCTC) %>% set_names(list_depts)
+list_hist_day <- map(list_dat, PlotHistDay) %>% set_names(list_depts)
 
 # by week & commune
-list_hist_post_hurr_week_commune <- map(list_dat_post_hurr, PlotHistWeekCommunePostHurrCTC) %>% set_names(list_depts)
+list_hist_week_commune <- map(list_dat, PlotHistWeekCommune) %>% set_names(list_depts)
 
-# by week & inst
-list_hist_post_hurr_week_CTC <- map(list_dat_post_hurr, PlotHistWeekInstPostHurrCTC) %>% set_names(list_depts)
+# by day & inst
+list_hist_day_inst <- map(list_dat, PlotHistDayInst) %>% set_names(list_depts)
+
+# # by week & inst
+# list_hist_week <- map(list_dat, PlotHistWeekInst) %>% set_names(list_depts)
 
 # tables
-list_table_post_hurr_CTC <- map(list_dat_post_hurr, MakeTablePostHurrCTC) %>% set_names(list_depts)
+list_table <- map(list_dat, MakeTable) %>% set_names(list_depts)
 ```
 
--	Analyse base de données de diarrhées aigues sévères de la Grand’Anse
--	Investigation de décès institutionnels a Dame Marie, Recherche active communautaire et reponse
--	Evaluation de la qualité des données cholera a Dame Marie, Chambellan et Moron
+<!-- -	Analyse base de données de diarrhées aigues sévères de la Grand’Anse -->
+<!-- -	Investigation de décès institutionnels a Dame Marie, Recherche active communautaire et reponse -->
+<!-- -	Evaluation de la qualité des données cholera a Dame Marie, Chambellan et Moron -->
 
 # Analyse des données de diarrhées aigues:
 
-```{r, fig.fullwidth = TRUE, fig.cap = paste0("Tendance des cas de diarrhées aigues, ", list_dat_post_hurr[[list_depts]]$date %>% min %>% format('%d %b %Y'), " - ", list_dat_post_hurr[[list_depts]]$date %>% max %>% format('%d %b %Y'), " Grand’Anse (données partielles).")}
-list_hist_post_hurr_day[[list_depts]]
+```{r, fig.fullwidth = TRUE, fig.cap = paste0("Tendance des cas de diarrhées aigues, ", list_dat[[list_depts]]$date %>% min %>% format('%d %b %Y'), " - ", list_dat[[list_depts]]$date %>% max %>% format('%d %b %Y'), " Grand’Anse (données partielles).")}
+list_hist_day[[list_depts]]
 ```
 
 \newpage
@@ -69,11 +69,11 @@ list_hist_post_hurr_day[[list_depts]]
 \makeatletter\setlength\hsize{\@tufte@fullwidth}\setlength\linewidth{\@tufte@fullwidth}\let\caption\@tufte@orig@caption\makeatother
 \footnotesize
 ```{r, tab_overview}
-if(nrow(list_table_post_hurr_CTC[[list_depts]])>1) {rws <- seq(1, nrow(list_table_post_hurr_CTC[[list_depts]]) - 1, by = 2)}
+if(nrow(list_table[[list_depts]])>1) {rws <- seq(1, nrow(list_table[[list_depts]]) - 1, by = 2)}
 
-list_table_post_hurr_CTC[[list_depts]] %>% 
+list_table[[list_depts]] %>% 
   xtable::xtable(
-    caption = paste0("Répartition des cas de diarrhées aigues par CTC/UTC, ", list_dat_post_hurr[[list_depts]]$date %>% min %>% format('%d %b %Y'), " - ", list_dat_post_hurr[[list_depts]]$date %>% max %>% format('%d %b %Y'), " Grand’Anse (données partielles)."), 
+    caption = paste0("Répartition des cas de diarrhées aigues par CTC/UTC, ", list_dat[[list_depts]]$date %>% min %>% format('%d %b %Y'), " - ", list_dat[[list_depts]]$date %>% max %>% format('%d %b %Y'), " Grand’Anse (données partielles)."), 
     digits = 0, label = "tab_overview", align = 'lllrrrr'
   ) %>% 
   print(booktabs = TRUE, caption.placement = "top", add.to.row = list(pos = as.list(rws), command = rep("\\rowcolor{whoblue!15}", length(rws))), include.rownames = FALSE, comment = FALSE, tabular.environment = 'longtable', floating = FALSE)
@@ -82,12 +82,12 @@ list_table_post_hurr_CTC[[list_depts]] %>%
 
 \newpage
 
-```{r, fig.fullwidth = TRUE, fig.height=4, fig.cap = paste0("Tendance des cas de diarrhées aigues, ", list_dat_post_hurr[[list_depts]]$date %>% min %>% format('%d %b %Y'), " - ", list_dat_post_hurr[[list_depts]]$date %>% max %>% format('%d %b %Y'), " par commune, Grand’Anse (données partielles).")}
-list_hist_post_hurr_week_commune[[list_depts]]
+```{r, fig.fullwidth = TRUE, fig.height=4, fig.cap = paste0("Tendance des cas de diarrhées aigues, ", list_dat[[list_depts]]$date %>% min %>% format('%d %b %Y'), " - ", list_dat[[list_depts]]$date %>% max %>% format('%d %b %Y'), " par commune, Grand’Anse (données partielles).")}
+list_hist_week_commune[[list_depts]]
 ```
 
 \newpage
 
-```{r, fig.fullwidth = TRUE, fig.height=5.5, fig.cap = paste0("Tendance des cas de diarrhées aigues, ", list_dat_post_hurr[[list_depts]]$date %>% min %>% format('%d %b %Y'), " - ", list_dat_post_hurr[[list_depts]]$date %>% max %>% format('%d %b %Y'), " par CTC, Grand’Anse (données partielles).")}
-list_hist_post_hurr_week_CTC[[list_depts]]
+```{r, fig.fullwidth = TRUE, fig.height=4, fig.cap = paste0("Tendance des cas de diarrhées aigues, ", list_dat[[list_depts]]$date %>% min %>% format('%d %b %Y'), " - ", list_dat[[list_depts]]$date %>% max %>% format('%d %b %Y'), " par CTC, Grand’Anse (données partielles).")}
+list_hist_day_inst[[list_depts]]
 ```
