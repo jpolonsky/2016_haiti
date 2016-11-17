@@ -1,16 +1,5 @@
 # load("ws.RData")
 
-library(readxl)
-library(stringr)
-library(dplyr)
-library(magrittr)
-library(tidyr)
-library(purrr)
-library(lubridate)
-library(ggplot2)
-# library(viridis)
-library(extrafont)
-
 source('functions.R')
 
 # # list data sheets to be read in (all communes per dept)
@@ -49,9 +38,10 @@ list_depts <-
   str_replace_all(c('data/' = '', '[-_]Surveillance Cholera.*' = ''))
 
 list_depts <- 'DSGA'
-list_depts <- 'DSS'
+# list_depts <- 'DSS'
 
-list_dat <- map(list_depts, WrangleData) %>% set_names(list_depts)
+list_dat_raw <- map(list_depts, WrangleData) %>% set_names(list_depts)
+list_dat <- map(list_dat_raw, MergeAges)
 
 # plot by day
 list_hist_day <- map(list_dat, PlotHistDay)
@@ -115,3 +105,12 @@ df_map_haiti <-
 # read in population data
 df_map <- map(list_dat, WrangleDataMapPopAR)
 list_map <- map(df_map, MakeMapAR)
+
+
+# pie charts
+df_pie_cas_vus <- map(list_dat_raw, WrangleDataPie, variable = 'cas_vus')
+# df_pie_deces_inst <- map(list_dat_raw, WrangleDataPie, variable = 'deces_inst')
+
+list_pie_age <- map(df_pie_cas_vus, PlotPie, colour_scheme = 'RdBu')
+list_pie_commune <- map(df_pie_cas_vus, PlotPie, colour_scheme = 'RdBu', key = 'commune')
+

@@ -1,3 +1,14 @@
+library(readxl)
+library(stringr)
+library(dplyr)
+library(magrittr)
+library(tidyr)
+library(purrr)
+library(lubridate)
+library(ggplot2)
+# library(viridis)
+library(extrafont)
+
 WrangleData <- function(dept = NULL){
   
   list_path <- list_db_paths[str_detect(list_db_paths, dept) == TRUE]
@@ -29,18 +40,12 @@ WrangleData <- function(dept = NULL){
   dat <-
     dat_raw[4:ncol(dat_raw)] %>%
     setNames(dat_names) %>%
-    gather(key, value, -c(inst, commune)) 
-  
-  dat_post_hurr <- 
-    dat %>%
+    gather(key, value, -c(inst, commune)) %>% 
     separate(key, c('date', 'key'), ':') %>% 
     mutate(
       dept = dept,
       inst = str_trim(inst),
       date = ymd(date),
-      key = str_replace_all(key, fixed('_<5'), ''),
-      key = str_replace_all(key, fixed('_5+'), ''),
-      # key = str_replace_all(key, 'deces.*', 'deces'),
       value = as.numeric(value)
     ) %>% 
     filter(
@@ -50,28 +55,44 @@ WrangleData <- function(dept = NULL){
       date < today()
     ) %>% 
     group_by(dept, inst, commune, date, key) %>% 
-    summarise(n = sum(value, na.rm = TRUE)) %>% 
+    summarise(value = sum(value, na.rm = TRUE)) %>% 
     ungroup
   
-  return(dat_post_hurr)
+  return(dat)
   
 }
 
+MergeAges <- function(data = NULL){
+  
+  dat <- 
+    data %>%
+    mutate(
+      key = str_replace_all(key, fixed('_<5'), ''),
+      key = str_replace_all(key, fixed('_5+'), '')
+      # key = str_replace_all(key, 'deces.*', 'deces')
+    ) %>% 
+    group_by(dept, inst, commune, date, key) %>% 
+    summarise(value = sum(value, na.rm = TRUE)) %>% 
+    ungroup
+  
+  return(dat)
+  
+}
 
 PlotHistDay <- function(data = NULL){
   
   ggplot(
     data %>% filter(key %in% 'cas_vus')
     ) +
-    geom_bar(aes(x = date, y = n), stat = 'identity') +
-    # geom_bar(aes(x = date, y = n, fill = inst), stat = 'identity') +
+    geom_bar(aes(x = date, y = value), stat = 'identity') +
+    # geom_bar(aes(x = date, y = value, fill = inst), stat = 'identity') +
     # scale_fill_viridis(discrete = TRUE) +
     geom_text(
       data =
         data %>% 
         filter(key %in% 'cas_vus') %>% 
         group_by(date) %>% 
-        summarise(total = sum(n)),
+        summarise(total = sum(value)),
       aes(x = date, y = total + max(total)/50, label = total), size = 1
     ) +
     labs(x = 'Date', y = '# cases') +
@@ -95,19 +116,19 @@ PlotHistDayInst <- function(data = NULL){
     ungroup() %>% 
     mutate(inst = ifelse(inst == 'UTC', paste(inst, commune), inst)) %>% 
     group_by(inst, date, key) %>%
-    summarise(n = sum(n))
+    summarise(value = sum(value))
   
   exclude <- 
     dat %>% 
     group_by(inst) %>% 
-    summarise(n = sum(n)) %>% 
-    filter(n == 0) %>% 
+    summarise(value = sum(value)) %>% 
+    filter(value == 0) %>% 
     c
   
   ggplot(
     dat %>% filter(!inst %in% exclude$inst)
   ) +
-    geom_bar(aes(x = date, y = n), stat = 'identity') +
+    geom_bar(aes(x = date, y = value), stat = 'identity') +
     facet_wrap(~ inst) +
     labs(x = 'Date', y = '# cases') +
     ggthemes::theme_tufte(base_family = 'Palatino') +
@@ -130,14 +151,14 @@ PlotHistWeek <- function(data = NULL){
     data %>% 
     mutate(epiweek = epitools::as.week(date)[['week']]) %>%
     group_by(inst, commune, epiweek, key) %>%
-    summarise(n = sum(n))
+    summarise(value = sum(value))
   
   ggplot(tmp) +
-    geom_bar(aes(x = epiweek, y = n), stat = 'identity') +
-    # geom_bar(aes(x = epiweek, y = n, fill = commune), stat = 'identity') +
+    geom_bar(aes(x = epiweek, y = value), stat = 'identity') +
+    # geom_bar(aes(x = epiweek, y = value, fill = commune), stat = 'identity') +
     # scale_fill_viridis(discrete = TRUE) +
     geom_text(
-      data = tmp %>% group_by(epiweek) %>% summarise(total = sum(n)), 
+      data = tmp %>% group_by(epiweek) %>% summarise(total = sum(value)), 
       aes(x = epiweek, y = total + max(total)/50, label = total), size = 1
     ) +
     labs(x = 'Epiweek 2016', y = '# cases') +
@@ -154,20 +175,20 @@ PlotHistWeekCommune <- function(data = NULL){
     filter(key == 'cas_vus') %>% 
     mutate(epiweek = epitools::as.week(date)[['week']]) %>%
     group_by(commune, epiweek) %>%
-    summarise(n = sum(n))
+    summarise(value = sum(value))
   
   # exclude <- 
   #   dat %>% 
   #   group_by(commune) %>% 
-  #   summarise(n = sum(n)) %>% 
-  #   filter(n == 0) %>% 
+  #   summarise(value = sum(value)) %>% 
+  #   filter(value == 0) %>% 
   #   c
   
   ggplot(
     # dat %>% filter(!commune %in% exclude$commune)
     dat
   ) +
-    geom_bar(aes(x = epiweek, y = n), stat = 'identity') +
+    geom_bar(aes(x = epiweek, y = value), stat = 'identity') +
     facet_wrap(~ commune) +
     labs(x = 'Epiweek 2016', y = '# cases') +
     # ggthemes::theme_tufte(base_family = 'Open Sans') +
@@ -197,19 +218,19 @@ PlotHistWeekInst <- function(data = NULL){
     mutate(inst = ifelse(inst == 'UTC', paste(inst, commune), inst)) %>% 
     mutate(epiweek = epitools::as.week(date)[['week']]) %>%
     group_by(inst, epiweek, key) %>%
-    summarise(n = sum(n))
+    summarise(value = sum(value))
   
   exclude <- 
     dat %>% 
     group_by(inst) %>% 
-    summarise(n = sum(n)) %>% 
-    filter(n == 0) %>% 
+    summarise(value = sum(value)) %>% 
+    filter(value == 0) %>% 
     c
   
   ggplot(
     dat %>% filter(!inst %in% exclude$inst)
   ) +
-    geom_bar(aes(x = epiweek, y = n), stat = 'identity') +
+    geom_bar(aes(x = epiweek, y = value), stat = 'identity') +
     facet_wrap(~inst) +
     labs(x = 'Epiweek 2016', y = '# cases') +
     theme(legend.position = 'none', axis.line = element_line(color = "black")) +
@@ -238,8 +259,8 @@ MakeTable <- function(data){
     ungroup() %>% 
     mutate(inst = ifelse(inst == 'UTC', paste(inst, commune), inst)) %>% 
     group_by(commune, inst, key) %>% 
-    summarise(n = sum(n)) %>% 
-    spread(key, n) %>% 
+    summarise(value = sum(value)) %>% 
+    spread(key, value) %>% 
     ungroup %>% 
     mutate(
       `% cas` = round(cas_vus/sum(cas_vus)*100, 1) %>% ifelse(is.nan(.), 0, .),
@@ -306,7 +327,7 @@ WrangleDataMapPopAR <- function(data = NULL) {
       data %>% 
         mutate(commune = str_replace_all(commune, "-", ' ')) %>% 
         group_by(commune) %>% 
-        summarise(cases = sum(n)) %>% 
+        summarise(cases = sum(value)) %>% 
         full_join(    
           read_excel(
             'data/population.xlsx', 
@@ -355,5 +376,94 @@ MakeMapAR <- function(data){
       axis.ticks = element_blank()
     ) +
     labs(x = 'Longitude', y = 'Latitude')
+  
+}
+
+
+# pie charts
+WrangleDataPie <- function(data = NULL, variable = NULL){
+  
+  data %>% 
+    filter(str_detect(key, variable)) %>% 
+    mutate(key = str_replace_all(key, paste0(variable, '_'), ''))
+  
+}  
+
+#' Pie plot
+#' @export
+PlotPie <- function(data, key = 'key', value = 'value', colour_scheme = 'Blues', title = NULL, facet_var = NULL, retain.order = F){
+  browser()
+  tmp <-
+    eval(substitute(
+      data %>%
+        group_by_(key) %>%
+        summarise(value_sum = round(sum(colname, na.rm = T))),
+      list(colname = as.symbol(value)))) %>%
+    mutate(prop = round(value_sum/sum(value_sum) * 100, 1))
+  
+  tmp <- if (retain.order == T) tmp else arrange(tmp, desc(prop))
+  
+  if (nrow(tmp) > 10) {
+    
+    tmp1 <- tmp[1:7, ]
+    
+    tmp2 <-
+      tmp[8:nrow(tmp), ] %>%
+      summarise(value_sum = sum(value_sum)) %>%
+      mutate(prop = round(value_sum/sum(tmp$value_sum) * 100, 1))
+    
+    tmp1[8, 1] <- 'Other'
+    tmp1[8, 2:3] <- tmp2
+    
+    tmp <- mutate(tmp1, pos = cumsum(prop) - 0.5 * prop)
+    
+    tmp[[key]] <-
+      factor(tmp[[key]],
+             levels = c(tmp[[key]][nrow(tmp)],
+                        tmp[[key]][-nrow(tmp)][order(tmp$prop[-nrow(tmp)])]))
+    
+  } else {
+    
+    tmp <- mutate(tmp, pos = cumsum(prop) - 0.5 * prop)
+    tmp[[key]] <- factor(tmp[[key]], levels = tmp[[key]])
+    
+  }
+  
+  tmp$char_lab <- as.character(tmp[[key]])
+  
+  TwoLines <- function(x) {
+    if (nchar(x) > 10) {
+      x <- gsub(' or ', '/\n', x)
+      x <- gsub(' ', '\n', x)
+    } else x
+    return(x)
+  }
+  
+  tmp$char_lab <- sapply(as.list(tmp$char_lab), TwoLines)
+  
+  for(i in 1:nrow(tmp)) tmp$label[i] <- paste0(tmp[i, 'char_lab'], '\n', tmp[i, 'prop'], '%')
+  
+  tmp[[key]] <- factor(tmp[[key]], levels = tmp[[key]])
+  
+  ggplot(tmp, aes_string(x = 1, y = 'prop', fill = key)) +
+    geom_bar(width = 1, stat = 'identity', colour = 'white') +
+    coord_polar('y', start = 0) +
+    geom_text(aes(x = 1.75, y = tmp$pos, label = tmp$label), colour = 'black', family = 'Palatino', check_overlap = TRUE) +
+    scale_y_continuous(breaks = tmp$pos, labels = NULL) +
+    scale_fill_manual(
+      values = if(colour_scheme %in% c('viridis', 'Viridis')) viridis::viridis(nrow(tmp))
+      else colorRampPalette(RColorBrewer::brewer.pal(9, colour_scheme))(nrow(tmp))
+    ) +
+    ggthemes::theme_tufte(base_family = 'Palatino') +
+    theme(
+      panel.border = element_blank(),
+      plot.title = element_text(size = 12, face = 'bold', color = 'darkblue'),
+      legend.key = element_blank(),
+      legend.position = '',
+      axis.ticks.y = element_blank(),
+      axis.text.y = element_blank(),
+      panel.grid  = element_blank()
+    ) +
+    labs(x = '', y = '', title = ifelse(title %in% NULL, NULL, paste0(title)))
   
 }

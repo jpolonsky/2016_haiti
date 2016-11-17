@@ -64,7 +64,7 @@ list_map <- map(list_df_map, MakeMapAR)
 list_hist_day[[list_depts]]
 ```
 
-## Taux d'attaque des cas de diarrhées aigues par 10,000 personnes, par commune
+## Taux d'attaque par 10,000 personnes, par commune
 
 ```{r}
 list_map[[list_depts]]
