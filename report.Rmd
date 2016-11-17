@@ -30,7 +30,8 @@ list_db_paths <- dir('data', full.names = TRUE)
 #   str_replace_all(c('data/' = '', '[-_]Surveillance Cholera.*' = ''))
 list_depts <- params$dep_san
 
-list_dat <- map(list_depts, WrangleData) %>% set_names(list_depts)
+list_dat_raw <- map(list_depts, WrangleData) %>% set_names(list_depts)
+list_dat <- map(list_dat_raw, MergeAges)
 list_df_map <- map(list_dat, WrangleDataMapPopAR)
 ```
 
@@ -44,6 +45,12 @@ list_df_map <- map(list_dat, WrangleDataMapPopAR)
 # plot by day
 list_hist_day <- map(list_dat, PlotHistDay)
 list_hist_day[[list_depts]]
+```
+
+```{r, fig.fullwidth = TRUE, fig.height = 3, fig.cap = paste0("Répartition des cas de diarrhées aigues par commune, ", list_dat[[list_depts]]$date %>% min %>% format('%d %b %Y'), " - ", list_dat[[list_depts]]$date %>% max %>% format('%d %b %Y'), " Grand’Anse (données partielles).")}
+df_pie_cas_vus <- map(list_dat_raw, WrangleDataPie, variable = 'cas_vus')
+list_pie_commune <- map(df_pie_cas_vus, PlotPie, colour_scheme = 'RdBu', key = 'commune')
+list_pie_commune[[list_depts]]
 ```
 
 \newpage
@@ -86,4 +93,11 @@ list_hist_week_commune[[list_depts]]
 # by day & inst
 list_hist_day_inst <- map(list_dat, PlotHistDayInst)
 list_hist_day_inst[[list_depts]]
+```
+
+\newpage
+
+```{r, fig.fullwidth = TRUE, fig.cap = paste0("Répartition des cas de diarrhées aigues par tranche d'age, ", list_dat[[list_depts]]$date %>% min %>% format('%d %b %Y'), " - ", list_dat[[list_depts]]$date %>% max %>% format('%d %b %Y'), " par commune, Grand’Anse (données partielles).")}
+list_pie_age <- map(df_pie_cas_vus, PlotPie, colour_scheme = 'RdBu', facet_var = 'commune')
+list_pie_age[[list_depts]]
 ```

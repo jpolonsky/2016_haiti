@@ -83,7 +83,7 @@ PlotHistDay <- function(data = NULL){
   
   ggplot(
     data %>% filter(key %in% 'cas_vus')
-    ) +
+  ) +
     geom_bar(aes(x = date, y = value), stat = 'identity') +
     # geom_bar(aes(x = date, y = value, fill = inst), stat = 'identity') +
     # scale_fill_viridis(discrete = TRUE) +
@@ -131,14 +131,16 @@ PlotHistDayInst <- function(data = NULL){
     geom_bar(aes(x = date, y = value), stat = 'identity') +
     facet_wrap(~ inst) +
     labs(x = 'Date', y = '# cases') +
-    ggthemes::theme_tufte(base_family = 'Palatino') +
+    # ggthemes::theme_tufte(base_family = 'Palatino') +
+    theme_bw() +
     theme(
       legend.position = 'none', 
       axis.line = element_line(color = "black"),
-      axis.title = element_text(size = 6), 
-      axis.text.x = element_text(size = 5, angle = 45),
-      axis.text.y = element_text(size = 5),
-      strip.text = element_text(size = 5),
+      axis.title = element_text(size = 6, family = 'Palatino', face = 'bold'), 
+      axis.text.x = element_text(size = 5, angle = 45, family = 'Palatino'),
+      axis.text.y = element_text(size = 5, family = 'Palatino'),
+      panel.grid  = element_blank(),
+      strip.text = element_text(size = 5, family = 'Palatino', face = 'bold'),
       axis.ticks = element_blank()
     )
   
@@ -194,14 +196,15 @@ PlotHistWeekCommune <- function(data = NULL){
     # ggthemes::theme_tufte(base_family = 'Open Sans') +
     # ggthemes::theme_tufte(base_family = 'GillSans') +
     # ggthemes::theme_tufte(base_family = 'Helvetica') +
-    ggthemes::theme_tufte(base_family = 'Palatino') +
-    # theme_bw() +
+    # ggthemes::theme_tufte(base_family = 'Palatino') +
+    theme_bw() +
     theme(
       legend.position = 'none', 
       axis.line = element_line(color = "black"),
-      axis.title = element_text(size = 6), 
-      axis.text = element_text(size = 5),
-      strip.text = element_text(size = 5),
+      axis.title = element_text(size = 6, family = 'Palatino', face = 'bold'), 
+      axis.text = element_text(size = 5, family = 'Palatino'),
+      panel.grid  = element_blank(),
+      strip.text = element_text(size = 5, family = 'Palatino', face = 'bold'),
       axis.ticks = element_blank()
     )
   
@@ -234,14 +237,15 @@ PlotHistWeekInst <- function(data = NULL){
     facet_wrap(~inst) +
     labs(x = 'Epiweek 2016', y = '# cases') +
     theme(legend.position = 'none', axis.line = element_line(color = "black")) +
-    ggthemes::theme_tufte() +
-    # theme_bw() +
+    # ggthemes::theme_tufte() +
+    theme_bw() +
     theme(
       legend.position = 'none', 
       axis.line = element_line(color = "black"),
-      axis.title = element_text(size = 6), 
-      axis.text = element_text(size = 5),
-      strip.text = element_text(size = 5),
+      axis.title = element_text(size = 6, family = 'Palatino', face = 'bold'), 
+      axis.text = element_text(size = 5, family = 'Palatino'),
+      panel.grid  = element_blank(),
+      strip.text = element_text(size = 5, family = 'Palatino', face = 'bold'),
       axis.ticks = element_blank()
     )
   
@@ -291,10 +295,10 @@ MakeTable <- function(data){
     unite(deces_comm, deces_comm:`% deces_comm`, sep = ' ') %>% 
     # set_names(c('Commune', 'UTC/CTC', 'Cas', '% cas', 'Décès inst.', '% décès inst.', 'Décès comm.', '% décès comm', 'Total décès'))
     set_names(c('Commune', 'UTC/CTC', 'Cas (%)', 'Décès inst. (%)', 'Décès comm. (%)', 'Total décès'))
-    
+  
   
   return(tmp)
-   
+  
 }
 
 
@@ -392,41 +396,60 @@ WrangleDataPie <- function(data = NULL, variable = NULL){
 #' Pie plot
 #' @export
 PlotPie <- function(data, key = 'key', value = 'value', colour_scheme = 'Blues', title = NULL, facet_var = NULL, retain.order = F){
-  browser()
+  
   tmp <-
-    eval(substitute(
-      data %>%
-        group_by_(key) %>%
-        summarise(value_sum = round(sum(colname, na.rm = T))),
-      list(colname = as.symbol(value)))) %>%
-    mutate(prop = round(value_sum/sum(value_sum) * 100, 1))
+    if(is.null(facet_var)) {
+      
+      eval(substitute(
+        data %>%
+          group_by_(key) %>%
+          summarise(value_sum = round(sum(colname, na.rm = T))),
+        list(colname = as.symbol(value)))
+      ) %>%
+        mutate(prop = round(value_sum/sum(value_sum) * 100, 1))
+      
+    } else {
+      
+      eval(substitute(
+        data %>%
+          group_by_(facet_var, key) %>%
+          summarise(value_sum = round(sum(colname, na.rm = T))),
+        list(colname = as.symbol(value)))
+      ) %>%
+        group_by_(facet_var) %>%
+        mutate(prop = round(value_sum/sum(value_sum) * 100, 1))
+      
+    }
   
   tmp <- if (retain.order == T) tmp else arrange(tmp, desc(prop))
   
-  if (nrow(tmp) > 10) {
-    
+  if (length(unique(tmp[[key]])) > 10) {
+
     tmp1 <- tmp[1:7, ]
-    
+
     tmp2 <-
-      tmp[8:nrow(tmp), ] %>%
+      tmp %>% 
+      slice(8:nrow(tmp)) %>%
       summarise(value_sum = sum(value_sum)) %>%
       mutate(prop = round(value_sum/sum(tmp$value_sum) * 100, 1))
-    
+
+    # browser()
     tmp1[8, 1] <- 'Other'
-    tmp1[8, 2:3] <- tmp2
     
-    tmp <- mutate(tmp1, pos = cumsum(prop) - 0.5 * prop)
-    
+    tmp1[8, (ncol(tmp1)-1):ncol(tmp1)] <- tmp2
+      
+    tmp <- tmp1 %>% mutate(pos = cumsum(prop) - 0.5 * prop)
+
     tmp[[key]] <-
       factor(tmp[[key]],
              levels = c(tmp[[key]][nrow(tmp)],
                         tmp[[key]][-nrow(tmp)][order(tmp$prop[-nrow(tmp)])]))
-    
+
   } else {
-    
-    tmp <- mutate(tmp, pos = cumsum(prop) - 0.5 * prop)
-    tmp[[key]] <- factor(tmp[[key]], levels = tmp[[key]])
-    
+  
+  tmp <- mutate(tmp, pos = cumsum(prop) - 0.5 * prop)
+  tmp[[key]] <- factor(tmp[[key]], levels = unique(tmp[[key]]))
+  
   }
   
   tmp$char_lab <- as.character(tmp[[key]])
@@ -443,27 +466,71 @@ PlotPie <- function(data, key = 'key', value = 'value', colour_scheme = 'Blues',
   
   for(i in 1:nrow(tmp)) tmp$label[i] <- paste0(tmp[i, 'char_lab'], '\n', tmp[i, 'prop'], '%')
   
-  tmp[[key]] <- factor(tmp[[key]], levels = tmp[[key]])
+  tmp[[key]] <- factor(tmp[[key]], levels = unique(tmp[[key]]))
   
-  ggplot(tmp, aes_string(x = 1, y = 'prop', fill = key)) +
-    geom_bar(width = 1, stat = 'identity', colour = 'white') +
-    coord_polar('y', start = 0) +
-    geom_text(aes(x = 1.75, y = tmp$pos, label = tmp$label), colour = 'black', family = 'Palatino', check_overlap = TRUE) +
-    scale_y_continuous(breaks = tmp$pos, labels = NULL) +
-    scale_fill_manual(
-      values = if(colour_scheme %in% c('viridis', 'Viridis')) viridis::viridis(nrow(tmp))
-      else colorRampPalette(RColorBrewer::brewer.pal(9, colour_scheme))(nrow(tmp))
-    ) +
-    ggthemes::theme_tufte(base_family = 'Palatino') +
-    theme(
-      panel.border = element_blank(),
-      plot.title = element_text(size = 12, face = 'bold', color = 'darkblue'),
-      legend.key = element_blank(),
-      legend.position = '',
-      axis.ticks.y = element_blank(),
-      axis.text.y = element_blank(),
-      panel.grid  = element_blank()
-    ) +
-    labs(x = '', y = '', title = ifelse(title %in% NULL, NULL, paste0(title)))
+  p <-
+    if(is.null(facet_var)) {
+
+      ggplot(tmp) +
+        geom_bar(
+          aes_string(x = 1, y = 'prop', fill = key),
+          width = 1, stat = 'identity', colour = 'white'
+        ) +
+        coord_polar('y', start = 0) +
+        geom_text(
+          aes(x = 1.75, y = tmp$pos, label = tmp$label),
+          colour = 'black', family = 'Palatino', size = 4, check_overlap = TRUE
+        ) +
+        scale_y_continuous(breaks = tmp$pos, labels = NULL) +
+        scale_fill_manual(
+          values = if(colour_scheme %in% c('viridis', 'Viridis')) viridis::viridis(length(unique(tmp[[key]])))
+          else colorRampPalette(RColorBrewer::brewer.pal(9, colour_scheme))(length(unique(tmp[[key]])))
+        ) +
+        ggthemes::theme_tufte(base_family = 'Palatino') +
+        theme(
+          panel.border = element_blank(),
+          plot.title = element_text(size = 12, face = 'bold', color = 'darkblue'),
+          legend.key = element_blank(),
+          legend.position = '',
+          axis.ticks.y = element_blank(),
+          axis.text.y = element_blank(),
+          panel.grid  = element_blank()
+        ) +
+        labs(x = '', y = '', title = ifelse(title %in% NULL, NULL, paste0(title)))
+      
+    } else {
+      
+      ggplot(tmp) +
+        geom_bar(
+          aes_string(x = 1, y = 'prop', fill = key),
+          width = 1, stat = 'identity', colour = 'white'
+        ) +
+        coord_polar('y', start = 0) +
+        facet_wrap(facet_var) +
+        scale_y_continuous(breaks = tmp$pos, labels = NULL) +
+        scale_fill_manual(
+          values = if(colour_scheme %in% c('viridis', 'Viridis')) viridis::viridis(length(unique(tmp[[key]])))
+          else colorRampPalette(RColorBrewer::brewer.pal(9, colour_scheme))(length(unique(tmp[[key]])))
+        ) +
+        # ggthemes::theme_tufte(base_family = 'Palatino') +
+        theme_bw() +
+        theme(
+          plot.title = element_text(size = 12, face = 'bold', color = 'darkblue'),
+          legend.title = element_text(family = 'Palatino'),
+          legend.text = element_text(family = 'Palatino'),
+          legend.key = element_blank(),
+          # legend.position = '',
+          axis.ticks.y = element_blank(),
+          axis.text.y = element_blank(),
+          strip.text = element_text(size = 5, family = 'Palatino', face = 'bold'),
+          # panel.border = element_blank(),
+          panel.grid  = element_blank()
+        ) +
+        labs(x = '', y = '', title = ifelse(title %in% NULL, NULL, paste0(title)))
+      
+    }
+  
+  return(p)
   
 }
+

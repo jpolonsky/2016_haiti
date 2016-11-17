@@ -111,6 +111,7 @@ list_map <- map(df_map, MakeMapAR)
 df_pie_cas_vus <- map(list_dat_raw, WrangleDataPie, variable = 'cas_vus')
 # df_pie_deces_inst <- map(list_dat_raw, WrangleDataPie, variable = 'deces_inst')
 
-list_pie_age <- map(df_pie_cas_vus, PlotPie, colour_scheme = 'RdBu')
-list_pie_commune <- map(df_pie_cas_vus, PlotPie, colour_scheme = 'RdBu', key = 'commune')
+list_pie_age <- map(df_pie_cas_vus, PlotPie, colour_scheme = 'RdBu', facet_var = 'commune')
+map(df_pie_cas_vus, PlotPie, colour_scheme = 'viridis')
+map(df_pie_cas_vus, PlotPie, colour_scheme = 'RdBu', key = 'commune')
 
