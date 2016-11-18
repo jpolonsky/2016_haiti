@@ -82,11 +82,12 @@ MergeAges <- function(data = NULL){
 PlotHistDay <- function(data = NULL){
   
   ggplot(
-    data %>% filter(key %in% 'cas_vus')
+    data %>% 
+      filter(key %in% 'cas_vus') %>% 
+      group_by(date) %>% 
+      summarise(value = sum(value))
   ) +
     geom_bar(aes(x = date, y = value), stat = 'identity') +
-    # geom_bar(aes(x = date, y = value, fill = inst), stat = 'identity') +
-    # scale_fill_viridis(discrete = TRUE) +
     geom_text(
       data =
         data %>% 
@@ -140,6 +141,7 @@ PlotHistDayInst <- function(data = NULL){
       axis.text.x = element_text(size = 5, angle = 45, family = 'Palatino'),
       axis.text.y = element_text(size = 5, family = 'Palatino'),
       panel.grid  = element_blank(),
+      strip.background = element_rect(fill = 'white'),
       strip.text = element_text(size = 5, family = 'Palatino', face = 'bold'),
       axis.ticks = element_blank()
     )
@@ -193,9 +195,6 @@ PlotHistWeekCommune <- function(data = NULL){
     geom_bar(aes(x = epiweek, y = value), stat = 'identity') +
     facet_wrap(~ commune) +
     labs(x = 'Epiweek 2016', y = '# cases') +
-    # ggthemes::theme_tufte(base_family = 'Open Sans') +
-    # ggthemes::theme_tufte(base_family = 'GillSans') +
-    # ggthemes::theme_tufte(base_family = 'Helvetica') +
     # ggthemes::theme_tufte(base_family = 'Palatino') +
     theme_bw() +
     theme(
@@ -204,6 +203,7 @@ PlotHistWeekCommune <- function(data = NULL){
       axis.title = element_text(size = 6, family = 'Palatino', face = 'bold'), 
       axis.text = element_text(size = 5, family = 'Palatino'),
       panel.grid  = element_blank(),
+      strip.background = element_rect(fill = 'white'),
       strip.text = element_text(size = 5, family = 'Palatino', face = 'bold'),
       axis.ticks = element_blank()
     )
@@ -245,6 +245,7 @@ PlotHistWeekInst <- function(data = NULL){
       axis.title = element_text(size = 6, family = 'Palatino', face = 'bold'), 
       axis.text = element_text(size = 5, family = 'Palatino'),
       panel.grid  = element_blank(),
+      strip.background = element_rect(fill = 'white'),
       strip.text = element_text(size = 5, family = 'Palatino', face = 'bold'),
       axis.ticks = element_blank()
     )
@@ -525,7 +526,7 @@ PlotPie <- function(data, key = 'key', value = 'value', colour_scheme = 'Blues',
           axis.ticks.y = element_blank(),
           axis.text.y = element_blank(),
           strip.text = element_text(size = 3, family = 'Palatino', face = 'bold'),
-          # panel.border = element_blank(),
+          strip.background = element_rect(fill = 'white'),
           panel.grid  = element_blank()
         ) +
         labs(x = '', y = '', title = ifelse(title %in% NULL, NULL, paste0(title)))
@@ -536,3 +537,39 @@ PlotPie <- function(data, key = 'key', value = 'value', colour_scheme = 'Blues',
   
 }
 
+
+#' Horizontal bar plots 
+#' @export
+PlotBar <- function(data, key = 'key', value = 'value', facet_var = NULL, title = NULL, colour_scheme = 'Blues') {
+  
+  tmp <-
+    data %>%
+    group_by_(facet_var, key) %>%
+    summarise_(value = lazyeval::interp(~ round(sum(var)), var = as.name(value))) %>% 
+    mutate(prop = round(value/sum(value), 2))
+    
+  tmp[[facet_var]] <- forcats::fct_rev(tmp[[facet_var]])
+  
+  ggplot(tmp) +
+    geom_bar(aes_string(x = facet_var, y = 'prop', fill = key), stat = 'identity') +
+    scale_fill_manual(
+      values = if(colour_scheme %in% c('viridis', 'Viridis')) viridis::viridis(length(unique(tmp[[key]])))
+      else colorRampPalette(RColorBrewer::brewer.pal(9, colour_scheme))(length(unique(tmp[[key]])))
+    ) +
+    scale_y_continuous(labels = scales::percent) +
+    coord_flip() +
+    ggthemes::theme_tufte(base_family = 'Palatino') +
+    theme(
+      panel.border = element_blank(),
+      plot.title = element_text(size = 12, face = 'bold', color = 'darkblue'),
+      legend.text = element_text(size = 3, family = 'Palatino'),
+      legend.key = element_blank(),
+      legend.key.size = unit(.4, 'cm'), 
+      axis.text.x = element_text(size = 4, angle = 0, hjust = 1, colour = 'black', face = 'bold'),
+      legend.position = 'bottom',
+      legend.title = element_blank(),
+      axis.ticks = element_blank()
+    ) +
+    labs(title = '', x = '', y = title)
+  
+}  

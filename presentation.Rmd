@@ -1,7 +1,8 @@
 ---
 title: "Situation épidémiologique de la diarrhée aiguë après l'ouragan Matthew"
 subtitle: "Département de la Grand’ Anse, Haiti"
-author: "Jonathan Polonsky - WHO/WHE/HIM"
+# author: "Jonathan Polonsky - WHO/WHE/HIM"
+author: "MSPP/PAHO"
 date: '\today'
 fontsize: 11pt
 output:

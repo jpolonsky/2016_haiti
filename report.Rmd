@@ -7,7 +7,7 @@ output:
       '--include-before-body', 'titlepage.tex'
     ]
 params:
-  dep_san: DSS
+  dep_san: DSGA
 ---
 
 ```{r, cache=FALSE, message=FALSE, echo=FALSE, warning=FALSE, results='hide'}
@@ -82,9 +82,9 @@ list_hist_week_commune[[list_depts]]
 
 \newpage
 
-```{r, fig.fullwidth = FALSE, fig.cap = paste0("Répartition des cas de diarrhées aigues par tranche d'age, ", list_dat[[list_depts]]$date %>% min %>% format('%d %b %Y'), " - ", list_dat[[list_depts]]$date %>% max %>% format('%d %b %Y'), " par commune, Grand’Anse (données partielles).")}
-list_pie_age <- map(df_pie_cas_vus, PlotPie, colour_scheme = 'RdBu', facet_var = 'commune')
-list_pie_age[[list_depts]]
+```{r, fig.fullwidth = TRUE, fig.height=3, fig.cap = paste0("Répartition des cas de diarrhées aigues par tranche d'age, ", list_dat[[list_depts]]$date %>% min %>% format('%d %b %Y'), " - ", list_dat[[list_depts]]$date %>% max %>% format('%d %b %Y'), " par commune, Grand’Anse (données partielles).")}
+list_bar_age_commune <- map(df_pie_cas_vus, PlotBar, colour_scheme = 'RdBu', facet_var = 'commune')
+list_bar_age_commune[[list_depts]]
 ```
 
 \newpage

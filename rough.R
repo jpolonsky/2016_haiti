@@ -115,3 +115,4 @@ list_pie_age <- map(df_pie_cas_vus, PlotPie, colour_scheme = 'RdBu', facet_var =
 map(df_pie_cas_vus, PlotPie, colour_scheme = 'viridis')
 map(df_pie_cas_vus, PlotPie, colour_scheme = 'RdBu', key = 'commune')
 
+map(df_pie_cas_vus, PlotBar, colour_scheme = 'RdBu', facet_var = 'commune')
