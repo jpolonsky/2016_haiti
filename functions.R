@@ -375,6 +375,7 @@ MakeMapAR <- function(data){
     theme(
       legend.title = element_text(size = 6, face = 'bold'),
       legend.text = element_text(size = 5),
+      legend.key.size = unit(.4, 'cm'), 
       axis.title = element_text(size = 6, face = 'bold'),
       axis.text = element_text(size = 5),
       axis.ticks = element_blank()
@@ -474,12 +475,12 @@ PlotPie <- function(data, key = 'key', value = 'value', colour_scheme = 'Blues',
       ggplot(tmp) +
         geom_bar(
           aes_string(x = 1, y = 'prop', fill = key),
-          width = 1, stat = 'identity', colour = 'white'
+          width = 1, stat = 'identity', colour = 'white', size = .1
         ) +
         coord_polar('y', start = 0) +
         geom_text(
           aes(x = 1.75, y = tmp$pos, label = tmp$label),
-          colour = 'black', family = 'Palatino', size = 4, check_overlap = TRUE
+          colour = 'black', family = 'Palatino', size = 1, fontface = 'bold', check_overlap = TRUE
         ) +
         scale_y_continuous(breaks = tmp$pos, labels = NULL) +
         scale_fill_manual(
@@ -503,7 +504,7 @@ PlotPie <- function(data, key = 'key', value = 'value', colour_scheme = 'Blues',
       ggplot(tmp) +
         geom_bar(
           aes_string(x = 1, y = 'prop', fill = key),
-          width = 1, stat = 'identity', colour = 'white'
+          width = 1, stat = 'identity', colour = 'white', size = .1
         ) +
         coord_polar('y', start = 0) +
         facet_wrap(facet_var) +
@@ -516,13 +517,14 @@ PlotPie <- function(data, key = 'key', value = 'value', colour_scheme = 'Blues',
         theme_bw() +
         theme(
           plot.title = element_text(size = 12, face = 'bold', color = 'darkblue'),
-          legend.title = element_text(family = 'Palatino'),
-          legend.text = element_text(family = 'Palatino'),
+          legend.title = element_text(size = 4, family = 'Palatino', face = 'bold'),
+          legend.text = element_text(size = 3, family = 'Palatino'),
           legend.key = element_blank(),
           # legend.position = '',
+          legend.key.size = unit(.2, 'cm'), 
           axis.ticks.y = element_blank(),
           axis.text.y = element_blank(),
-          strip.text = element_text(size = 5, family = 'Palatino', face = 'bold'),
+          strip.text = element_text(size = 3, family = 'Palatino', face = 'bold'),
           # panel.border = element_blank(),
           panel.grid  = element_blank()
         ) +

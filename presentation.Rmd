@@ -23,14 +23,6 @@ knitr::knit_hooks$set(inline = function(x) if (is.numeric(x)) round(x, 1) )
 
 list_depts <- params$dep_san
 
-library(readxl)
-library(stringr)
-library(dplyr)
-library(tidyr)
-library(purrr)
-library(lubridate)
-library(ggplot2)
-
 source('functions.R')
 
 # list data sheets to be read in (all communes per dept)
@@ -39,7 +31,8 @@ list_db_paths <- dir('data', full.names = TRUE)
   # list_db_paths[str_detect(list_db_paths, 'Surveillance Cholera_2015_2016')] %>% 
   # str_replace_all(c('data/' = '', '[-_]Surveillance Cholera.*' = ''))
 
-list_dat <- map(list_depts, WrangleData) %>% set_names(list_depts)
+list_dat_raw <- map(list_depts, WrangleData) %>% set_names(list_depts)
+list_dat <- map(list_dat_raw, MergeAges)
 
 # plot by day
 list_hist_day <- map(list_dat, PlotHistDay)
