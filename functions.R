@@ -6,7 +6,6 @@ library(tidyr)
 library(purrr)
 library(lubridate)
 library(ggplot2)
-# library(viridis)
 library(extrafont)
 
 WrangleData <- function(dept = NULL){
@@ -52,7 +51,7 @@ WrangleData <- function(dept = NULL){
       !is.na(inst),
       inst != 'TOTAL',
       date >= ymd('2016-10-03'),
-      date < today()
+      date < (today()-1)
     ) %>% 
     group_by(dept, inst, commune, date, key) %>% 
     summarise(value = sum(value, na.rm = TRUE)) %>% 
@@ -401,7 +400,6 @@ PlotPie <- function(data, key = 'key', value = 'value', colour_scheme = 'Blues',
   
   tmp <-
     if(is.null(facet_var)) {
-      
       eval(substitute(
         data %>%
           group_by_(key) %>%
@@ -562,10 +560,11 @@ PlotBar <- function(data, key = 'key', value = 'value', facet_var = NULL, title 
     theme(
       panel.border = element_blank(),
       plot.title = element_text(size = 12, face = 'bold', color = 'darkblue'),
-      legend.text = element_text(size = 3, family = 'Palatino'),
+      legend.text = element_text(size = 5, family = 'Palatino', face = 'bold'),
       legend.key = element_blank(),
       legend.key.size = unit(.4, 'cm'), 
-      axis.text.x = element_text(size = 4, angle = 0, hjust = 1, colour = 'black', face = 'bold'),
+      axis.text.x = element_text(size = 5),
+      axis.text.y = element_text(size = 6, face = 'bold'),
       legend.position = 'bottom',
       legend.title = element_blank(),
       axis.ticks = element_blank()
