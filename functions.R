@@ -96,8 +96,8 @@ PlotHistDay <- function(data = NULL){
       aes(x = date, y = total + max(total)/50, label = total), size = 1
     ) +
     labs(x = 'Date', y = '# cases') +
-    ggthemes::theme_tufte(base_family = 'Palatino') +
-    # theme_bw() +
+    # ggthemes::theme_tufte(base_family = 'Palatino') +
+    theme_bw() +
     theme(
       axis.title = element_text(size = 6), 
       axis.text = element_text(size = 5),
@@ -165,7 +165,8 @@ PlotHistWeek <- function(data = NULL){
       aes(x = epiweek, y = total + max(total)/50, label = total), size = 1
     ) +
     labs(x = 'Epiweek 2016', y = '# cases') +
-    ggthemes::theme_tufte()
+    # ggthemes::theme_tufte()
+    theme_bw()
   
 }
 
@@ -194,8 +195,8 @@ PlotHistWeekCommune <- function(data = NULL){
     geom_bar(aes(x = epiweek, y = value), stat = 'identity') +
     facet_wrap(~ commune) +
     labs(x = 'Epiweek 2016', y = '# cases') +
-    # ggthemes::theme_tufte(base_family = 'Palatino') +
-    theme_bw() +
+    ggthemes::theme_tufte(base_family = 'Palatino') +
+    # theme_bw() +
     theme(
       legend.position = 'none', 
       axis.line = element_line(color = "black"),
@@ -397,7 +398,7 @@ WrangleDataPie <- function(data = NULL, variable = NULL){
 #' Pie plot
 #' @export
 PlotPie <- function(data, key = 'key', value = 'value', colour_scheme = 'Blues', title = NULL, facet_var = NULL, retain.order = F){
-  
+  # browser()
   tmp <-
     if(is.null(facet_var)) {
       eval(substitute(
@@ -448,7 +449,7 @@ PlotPie <- function(data, key = 'key', value = 'value', colour_scheme = 'Blues',
   } else {
   
   tmp <- mutate(tmp, pos = cumsum(prop) - 0.5 * prop)
-  tmp[[key]] <- factor(tmp[[key]], levels = unique(tmp[[key]]))
+  tmp[[key]] <- forcats::fct_inorder(tmp[[key]])
   
   }
   
@@ -466,11 +467,13 @@ PlotPie <- function(data, key = 'key', value = 'value', colour_scheme = 'Blues',
   
   for(i in 1:nrow(tmp)) tmp$label[i] <- paste0(tmp[i, 'char_lab'], '\n', tmp[i, 'prop'], '%')
   
-  tmp[[key]] <- factor(tmp[[key]], levels = unique(tmp[[key]]))
+  tmp[[key]] %<>% 
+    forcats::fct_inorder() %>% 
+    forcats::fct_rev()
   
   p <-
     if(is.null(facet_var)) {
-
+      # browser()
       ggplot(tmp) +
         geom_bar(
           aes_string(x = 1, y = 'prop', fill = key),
@@ -499,7 +502,7 @@ PlotPie <- function(data, key = 'key', value = 'value', colour_scheme = 'Blues',
         labs(x = '', y = '', title = ifelse(title %in% NULL, NULL, paste0(title)))
       
     } else {
-      
+      # browser()
       ggplot(tmp) +
         geom_bar(
           aes_string(x = 1, y = 'prop', fill = key),
@@ -546,17 +549,21 @@ PlotBar <- function(data, key = 'key', value = 'value', facet_var = NULL, title 
     summarise_(value = lazyeval::interp(~ round(sum(var)), var = as.name(value))) %>% 
     mutate(prop = round(value/sum(value), 2))
     
+  # browser()
+  tmp[[key]] <- forcats::fct_rev(tmp[[key]])
   tmp[[facet_var]] <- forcats::fct_rev(tmp[[facet_var]])
   
   ggplot(tmp) +
     geom_bar(aes_string(x = facet_var, y = 'prop', fill = key), stat = 'identity') +
     scale_fill_manual(
       values = if(colour_scheme %in% c('viridis', 'Viridis')) viridis::viridis(length(unique(tmp[[key]])))
-      else colorRampPalette(RColorBrewer::brewer.pal(9, colour_scheme))(length(unique(tmp[[key]])))
+      else colorRampPalette(RColorBrewer::brewer.pal(9, colour_scheme))(length(unique(tmp[[key]]))),
+      guide = guide_legend(reverse = TRUE)
     ) +
     scale_y_continuous(labels = scales::percent) +
     coord_flip() +
     ggthemes::theme_tufte(base_family = 'Palatino') +
+    # theme_bw() +
     theme(
       panel.border = element_blank(),
       plot.title = element_text(size = 12, face = 'bold', color = 'darkblue'),
@@ -569,6 +576,7 @@ PlotBar <- function(data, key = 'key', value = 'value', facet_var = NULL, title 
       legend.title = element_blank(),
       axis.ticks = element_blank()
     ) +
+    guides(guide_legend(reverse = T)) +
     labs(title = '', x = '', y = title)
-  
+
 }  

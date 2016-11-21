@@ -4,9 +4,10 @@ output:
     latex_engine: pdflatex
     pandoc_args:
     - --include-in-header
-    - styles.sty
+    - includes/styles.sty
     - --include-before-body
-    - titlepage.tex
+    - includes/titlepage.tex
+  html_document: default
   word_document: default
 params:
   dep_san: DSGA
@@ -18,18 +19,18 @@ params:
 knitr::opts_chunk$set(cache=FALSE, message=FALSE, echo=FALSE, warning=FALSE, results='asis')
 knitr::knit_hooks$set(inline = function(x) if (is.numeric(x)) round(x, 1) )
 
-load('ws.RData')
+# load('ws.RData')
 source('functions.R')
 
 list_db_paths <- dir('data', full.names = TRUE)
 # list_depts <-
 #   list_db_paths[str_detect(list_db_paths, 'Surveillance Cholera_2015_2016')] %>%
 #   str_replace_all(c('data/' = '', '[-_]Surveillance Cholera.*' = ''))
-# list_depts <- params$dep_san
+list_depts <- params$dep_san
 
-# list_dat_raw <- map(list_depts, WrangleData) %>% set_names(list_depts)
-# list_dat <- map(list_dat_raw, MergeAges)
-# df_map <- map(list_dat, WrangleDataMapPopAR)
+list_dat_raw <- map(list_depts, WrangleData) %>% set_names(list_depts)
+list_dat <- map(list_dat_raw, MergeAges)
+df_map <- map(list_dat, WrangleDataMapPopAR)
 ```
 
 <!-- -	Analyse base de données de diarrhées aigues sévères de la Grand’Anse -->
@@ -56,6 +57,7 @@ list_pie_commune[[list_depts]]
 \makeatletter\setlength\hsize{\@tufte@fullwidth}\setlength\linewidth{\@tufte@fullwidth}\let\caption\@tufte@orig@caption\makeatother
 \footnotesize
 ```{r, tab_overview}
+# print table if output is PDF document
 list_table <- map(list_dat, MakeTable)
 
 if(nrow(list_table[[list_depts]])>1) {rws <- seq(1, nrow(list_table[[list_depts]]) - 1, by = 2)}
@@ -68,6 +70,12 @@ list_table[[list_depts]] %>%
   print(booktabs = TRUE, caption.placement = "top", add.to.row = list(pos = as.list(rws), command = rep("\\rowcolor{whoblue!15}", length(rws))), include.rownames = FALSE, comment = FALSE, tabular.environment = 'longtable', floating = FALSE)
 ```
 \end{fullwidth}
+
+
+```{r}
+# print table if output is word or html document
+if(knitr::opts_knit$get("rmarkdown.pandoc.to") %in% c('docx', 'html')) knitr::kable(list_table[[list_depts]])
+```
 
 \newpage
 

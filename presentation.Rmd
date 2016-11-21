@@ -6,14 +6,13 @@ author: "MSPP/PAHO"
 date: '\today'
 fontsize: 11pt
 output:
-  # mintr::mint_beamer:
   beamer_presentation:
     theme: m
     slide_level: 2
     pandoc_args: ['--latex-engine=xelatex']
     includes:
-      in_header: header.tex
-      after_body: footer.tex
+      in_header: includes/header.tex
+      after_body: includes/footer.tex
 params:
   dep_san: DSGA
 ---
