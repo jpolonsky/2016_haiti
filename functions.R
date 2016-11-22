@@ -6,7 +6,7 @@ library(tidyr)
 library(purrr)
 library(lubridate)
 library(ggplot2)
-library(extrafont)
+# library(extrafont)
 
 WrangleData <- function(dept = NULL){
   
@@ -304,7 +304,7 @@ MakeTable <- function(data){
 
 
 WrangleDataMapPopAR <- function(data = NULL) {
-  # browser()
+  
   library(rgeos)
   library(maptools)
   # maptools::gpclibPermit()
