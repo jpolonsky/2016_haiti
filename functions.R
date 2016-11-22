@@ -51,7 +51,8 @@ WrangleData <- function(dept = NULL){
       !is.na(inst),
       inst != 'TOTAL',
       date >= ymd('2016-10-03'),
-      date < (today()-1)
+      # date < (today()-1)
+      epitools::as.week(date)[['week']] < epitools::as.week(today())[['week']]
     ) %>% 
     group_by(dept, inst, commune, date, key) %>% 
     summarise(value = sum(value, na.rm = TRUE)) %>% 
@@ -99,8 +100,9 @@ PlotHistDay <- function(data = NULL){
     # ggthemes::theme_tufte(base_family = 'Palatino') +
     theme_bw() +
     theme(
-      axis.title = element_text(size = 6), 
-      axis.text = element_text(size = 5),
+      axis.title = element_text(size = 6, family = 'Palatino', face = 'bold'), 
+      axis.text = element_text(size = 5, family = 'Palatino'),
+      panel.border  = element_blank(),
       axis.ticks = element_blank()
     ) 
   
@@ -135,11 +137,11 @@ PlotHistDayInst <- function(data = NULL){
     theme_bw() +
     theme(
       legend.position = 'none', 
-      axis.line = element_line(color = "black"),
       axis.title = element_text(size = 6, family = 'Palatino', face = 'bold'), 
       axis.text.x = element_text(size = 5, angle = 45, family = 'Palatino'),
       axis.text.y = element_text(size = 5, family = 'Palatino'),
-      panel.grid  = element_blank(),
+      panel.grid.major = element_line(size = .3),
+      panel.grid.minor  = element_blank(),
       strip.background = element_rect(fill = 'white'),
       strip.text = element_text(size = 5, family = 'Palatino', face = 'bold'),
       axis.ticks = element_blank()
@@ -195,14 +197,14 @@ PlotHistWeekCommune <- function(data = NULL){
     geom_bar(aes(x = epiweek, y = value), stat = 'identity') +
     facet_wrap(~ commune) +
     labs(x = 'Epiweek 2016', y = '# cases') +
-    ggthemes::theme_tufte(base_family = 'Palatino') +
-    # theme_bw() +
+    # ggthemes::theme_tufte(base_family = 'Palatino') +
+    theme_bw() +
     theme(
       legend.position = 'none', 
-      axis.line = element_line(color = "black"),
       axis.title = element_text(size = 6, family = 'Palatino', face = 'bold'), 
       axis.text = element_text(size = 5, family = 'Palatino'),
-      panel.grid  = element_blank(),
+      panel.grid.major = element_line(size = .3),
+      panel.grid.minor  = element_blank(),
       strip.background = element_rect(fill = 'white'),
       strip.text = element_text(size = 5, family = 'Palatino', face = 'bold'),
       axis.ticks = element_blank()
@@ -241,10 +243,10 @@ PlotHistWeekInst <- function(data = NULL){
     theme_bw() +
     theme(
       legend.position = 'none', 
-      axis.line = element_line(color = "black"),
       axis.title = element_text(size = 6, family = 'Palatino', face = 'bold'), 
       axis.text = element_text(size = 5, family = 'Palatino'),
-      panel.grid  = element_blank(),
+      panel.grid.major = element_line(size = .3),
+      panel.grid.minor  = element_blank(),
       strip.background = element_rect(fill = 'white'),
       strip.text = element_text(size = 5, family = 'Palatino', face = 'bold'),
       axis.ticks = element_blank()

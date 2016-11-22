@@ -55,8 +55,8 @@ list_hist_week <- map(list_dat, PlotHistWeek)
 # by week & commune
 list_hist_week_commune <- map(list_dat, PlotHistWeekCommune)
 
-# by week & inst
-list_hist_week_inst <- map(list_dat, PlotHistWeekInst)
+# by day & inst
+list_hist_day_inst <- map(list_dat, PlotHistDayInst)
 
 
 # tables
@@ -81,7 +81,7 @@ list_map <- map(df_map, MakeMapAR)
 
 ## read in WASH data
 WrangleDataMapWash <- function(data = NULL) {
-  # browser()
+  
   library(rgeos)
   library(maptools)
   # maptools::gpclibPermit()
@@ -94,9 +94,10 @@ WrangleDataMapWash <- function(data = NULL) {
   
   # df_commune_sheets <-
   #   data_frame(commune = c('DSGA', 'DSS'), sheet = c('Dept_Grand anse', 'Dept_Sud'))
-  
+  # browser()
   dat <- 
     df_map_haiti %>%
+    filter(NAME_1 %in% "Grand'Anse") %>% 
     mutate(
       NAME_3 = str_replace_all(NAME_3, "-", ' '),
       NAME_3 = str_replace_all(NAME_3, "é|è", 'e'),
@@ -105,16 +106,19 @@ WrangleDataMapWash <- function(data = NULL) {
       NAME_3 = str_replace_all(NAME_3, "ô", 'o'),
       NAME_3 = str_replace_all(NAME_3, "Saint", 'St.')
     ) %>% 
-    inner_join(
+    full_join(
       read_excel('data/wash.xlsx', sheet = 'Total', skip = 0) %>% 
         setNames(1:ncol(.)) %>% 
         select(7:18) %>% 
-        set_names(c('Marfranc', 'Previle', 'Chambellan', 'St. Antoine', 'Moron', "Anse d'Hainault", 'Les Irois', 'Dame Marie', 'Pestel', 'Abricots', 'Carrefour Sanon', 'Carrefour Charles')) %>% 
+        set_names(c('Marfranc (J)', 'Previle (J)', 'Chambellan', 'St. Antoine (J)', 'Moron', "Anse d'Hainault", 'Les Irois', 'Dame Marie', 'Pestel', 'Abricots', 'Carrefour Sanon (J)', 'Roseaux')) %>% 
         slice(1) %>% 
         t %>% 
         data.frame %>% 
         tibble::rownames_to_column() %>% 
-        set_names(c('commune', 'wash_rating')), 
+        set_names(c('commune', 'wash_rating')) %>% 
+        mutate(commune = ifelse(str_detect(commune, '(J)'), 'Jeremie', commune)) %>% 
+        group_by(commune) %>% 
+        summarise(wash_rating = mean(wash_rating)),
       by = c('NAME_3' = 'commune'))
   
   return(dat)
@@ -124,13 +128,24 @@ WrangleDataMapWash <- function(data = NULL) {
 df_map_wash <- map(list_dat, WrangleDataMapWash)
 
 MakeMapWASH <- function(data){
-  browser()
-  ggplot(data) +
-    geom_polygon(aes(long, lat, group = group, fill = wash_rating), colour = 'white', size = .2) +
+  # browser()
+  
+  data %>% 
+    mutate(
+      wash_col = 
+        ifelse(wash_rating < .5, '<50%',
+               ifelse(wash_rating >= .5 & wash_rating < .75, '50-75%',
+                      ifelse(wash_rating >= .75, '>75%', NA)
+               )
+        )
+    ) %>% 
+    ggplot() +
+    # geom_polygon(aes(long, lat, group = group, fill = wash_rating), colour = 'white', size = .2) +
+    # scale_fill_gradient(name = "WASH rating (%)", limits = c(0, 1), low = 'red', high = 'green', na.value = "lightgrey", labels = scales::percent) +
+    geom_polygon(aes(long, lat, group = group, fill = wash_col), colour = 'white', size = .2) +
+    scale_fill_manual(name = "WASH rating", values = c('<50%' = 'red', '50-75%' = 'orange', '>75%' = 'green'), na.value = "lightgrey") +
     coord_equal() +
     ggthemes::theme_tufte(base_family = 'Palatino') +
-    scale_fill_gradient(name = "WASH rating (%)", limits = c(0, 1), low = 'red', high = 'green', na.value = "lightgrey", labels = scales::percent) +
-    # viridis::scale_fill_viridis(labels = scales::comma) +
     theme(
       legend.title = element_text(size = 6, face = 'bold'),
       legend.text = element_text(size = 5),
@@ -143,9 +158,12 @@ MakeMapWASH <- function(data){
   
 }
 
-# list_map <- map(df_map_wash, MakeMapWASH)
+list_map_wash <- map(df_map_wash, MakeMapWASH)
 
-
+df_map_haiti %>% 
+  filter(NAME_1 %in% "Grand'Anse") %>% 
+  select(NAME_3) %>% 
+  unique 
 
 
 
@@ -187,3 +205,4 @@ MakeMapWASH <- function(data){
 #     size = .2
 #   ) +
 #   coord_equal()
+

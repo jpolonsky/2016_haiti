@@ -102,8 +102,11 @@ list_bar_age_commune[[list_depts]]
 \newpage
 
 ```{r, fig.fullwidth = TRUE, fig.height=4, fig.cap = paste0("Tendance des cas de diarrhées aigues, ", list_dat[[list_depts]]$date %>% min %>% format('%d %b %Y'), " - ", list_dat[[list_depts]]$date %>% max %>% format('%d %b %Y'), " par CTC, Grand’Anse (données partielles).")}
-# by day & inst
-list_hist_day_inst <- map(list_dat, PlotHistDayInst)
-list_hist_day_inst[[list_depts]]
+# # by day & inst
+# list_hist_day_inst <- map(list_dat, PlotHistDayInst)
+# list_hist_day_inst[[list_depts]]
+# by week & inst
+list_hist_week_inst <- map(list_dat, PlotHistWeekInst)
+list_hist_week_inst[[list_depts]]
 ```
 
