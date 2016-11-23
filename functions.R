@@ -88,7 +88,7 @@ PlotHistDay <- function(data = NULL){
       group_by(date) %>% 
       summarise(value = sum(value))
   ) +
-    geom_bar(aes(x = date, y = value), stat = 'identity') +
+    geom_col(aes(x = date, y = value)) +
     geom_text(
       data =
         data %>% 
@@ -131,7 +131,7 @@ PlotHistDayInst <- function(data = NULL){
   ggplot(
     dat %>% filter(!inst %in% exclude$inst)
   ) +
-    geom_bar(aes(x = date, y = value), stat = 'identity') +
+    geom_col(aes(x = date, y = value)) +
     facet_wrap(~ inst) +
     labs(x = 'Date', y = '# cases') +
     # ggthemes::theme_tufte(base_family = 'Palatino') +
@@ -160,8 +160,8 @@ PlotHistWeek <- function(data = NULL){
     summarise(value = sum(value))
   
   ggplot(tmp) +
-    geom_bar(aes(x = epiweek, y = value), stat = 'identity') +
-    # geom_bar(aes(x = epiweek, y = value, fill = commune), stat = 'identity') +
+    geom_col(aes(x = epiweek, y = value)) +
+    # geom_col(aes(x = epiweek, y = value, fill = commune)) +
     # scale_fill_viridis(discrete = TRUE) +
     geom_text(
       data = tmp %>% group_by(epiweek) %>% summarise(total = sum(value)), 
@@ -195,7 +195,7 @@ PlotHistWeekCommune <- function(data = NULL){
     # dat %>% filter(!commune %in% exclude$commune)
     dat
   ) +
-    geom_bar(aes(x = epiweek, y = value), stat = 'identity') +
+    geom_col(aes(x = epiweek, y = value)) +
     facet_wrap(~ commune) +
     labs(x = 'Epiweek 2016', y = '# cases') +
     # ggthemes::theme_tufte(base_family = 'Palatino') +
@@ -236,7 +236,7 @@ PlotHistWeekInst <- function(data = NULL){
   ggplot(
     dat %>% filter(!inst %in% exclude$inst)
   ) +
-    geom_bar(aes(x = epiweek, y = value), stat = 'identity') +
+    geom_col(aes(x = epiweek, y = value)) +
     facet_wrap(~inst) +
     labs(x = 'Epiweek 2016', y = '# cases') +
     theme(legend.position = 'none', axis.line = element_line(color = "black")) +
@@ -479,9 +479,9 @@ PlotPie <- function(data, key = 'key', value = 'value', colour_scheme = 'Blues',
     if(is.null(facet_var)) {
       # browser()
       ggplot(tmp) +
-        geom_bar(
+        geom_col(
           aes_string(x = 1, y = 'prop', fill = key),
-          width = 1, stat = 'identity', colour = 'white', size = .1
+          width = 1, colour = 'white', size = .1
         ) +
         coord_polar('y', start = 0) +
         geom_text(
@@ -508,9 +508,9 @@ PlotPie <- function(data, key = 'key', value = 'value', colour_scheme = 'Blues',
     } else {
       # browser()
       ggplot(tmp) +
-        geom_bar(
+        geom_col(
           aes_string(x = 1, y = 'prop', fill = key),
-          width = 1, stat = 'identity', colour = 'white', size = .1
+          width = 1, colour = 'white', size = .1
         ) +
         coord_polar('y', start = 0) +
         facet_wrap(facet_var) +
@@ -558,7 +558,7 @@ PlotBar <- function(data, key = 'key', value = 'value', facet_var = NULL, title 
   tmp[[facet_var]] <- forcats::fct_rev(tmp[[facet_var]])
   
   ggplot(tmp) +
-    geom_bar(aes_string(x = facet_var, y = 'prop', fill = key), stat = 'identity') +
+    geom_col(aes_string(x = facet_var, y = 'prop', fill = key)) +
     scale_fill_manual(
       values = if(colour_scheme %in% c('viridis', 'Viridis')) viridis::viridis(length(unique(tmp[[key]])))
       else colorRampPalette(RColorBrewer::brewer.pal(9, colour_scheme))(length(unique(tmp[[key]]))),
