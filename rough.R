@@ -1,35 +1,5 @@
 # load("ws.RData")
-
 source('functions.R')
-
-# # list data sheets to be read in (all communes per dept)
-# source('functions_orig.R')
-# 
-# list_db_paths <- dir('data', full.names = TRUE)
-# list_depts <- c('DSGA', 'DSS')
-# 
-# list_dat <- map(list_depts[1], WrangleData)
-# 
-# list_variables <- c('cas_vus_tot', 'cas_hosp_tot', 'deces_inst_tot', 'deces_comm_tot', 'deces_tot')
-# 
-# list_dat <- map(list_variables, AnalyseData, data = list_dat) %>% set_names(list_variables)
-# 
-# list_hist_year <- map(list_dat, PlotHistYear)
-# list_hist_commune <- map(list_dat, PlotHistCommune)
-# 
-# # since the hurricane
-# list_dat <- 
-#   map(list_dat, function(data) data %>% filter(year == '2016', epiweek >= 40) %>% mutate(epiweek = factor(epiweek)))
-# 
-# # by day
-# list_hist_day <- map(list_dat, PlotHistDay)
-# 
-# # by week
-# list_hist_week <- map(list_dat, PlotHistWeek)
-# 
-# # by week & commune
-# list_hist_week_commune <- map(list_dat, PlotHistWeekCommune)
-
 
 ## read in different page (CTC - 'Saisie Inst')
 list_db_paths <- dir('data', full.names = TRUE)
@@ -40,44 +10,32 @@ list_depts <-
 list_depts <- 'DSGA'
 # list_depts <- 'DSS'
 
-list_dat_raw <- map(list_depts, WrangleData) %>% set_names(list_depts)
-list_dat <- map(list_dat_raw, MergeAges)
+df_nested <-
+  list_depts %>% 
+  map(WrangleData) %>% 
+  set_names(list_depts) %>% 
+  bind_rows() %>% 
+  nest(-c(dept), .key = data_by_age) %>%
+  mutate(
+    # data sets
+    data = map(data_by_age, MergeAges),
+    data_pie = map(data_by_age, WrangleDataPie, variable = 'cas_vus'),
+    data_map = map2(data, dept, WrangleDataMapPopAR),
+    # table
+    epitable = map(data, MakeTable),
+    # plots
+    ## epicurves
+    epicurve_by_day_all = map(data, PlotHistDay),
+    epicurve_by_week_all = map(data, PlotHistWeek),
+    epicurve_by_week_commune = map(data, PlotHistWeekCommune),
+    epicurve_by_week_inst = map(data, PlotHistWeekInst),
+    ## proportion plots
+    pie_cases_by_commune = map(data_pie, PlotPie, colour_scheme = 'RdBu', key = 'commune'),
+    bar_cases_by_commune = map(data_pie, PlotBar, colour_scheme = 'RdBu', facet_var = 'commune'),
+    ## map
+    map = map(data_map, MakeMapAR)
+  )
 
-# plot by day
-list_hist_day <- map(list_dat, PlotHistDay)
-
-# by day & inst
-list_hist_day_inst <- map(list_dat, PlotHistDayInst)
-
-# plot by epiweek
-list_hist_week <- map(list_dat, PlotHistWeek)
-
-# by week & commune
-list_hist_week_commune <- map(list_dat, PlotHistWeekCommune)
-
-# by day & inst
-list_hist_day_inst <- map(list_dat, PlotHistDayInst)
-
-
-# tables
-list_table <- map(list_dat, MakeTable)
-
-# pie charts
-df_pie_cas_vus <- map(list_dat_raw, WrangleDataPie, variable = 'cas_vus')
-# df_pie_deces_inst <- map(list_dat_raw, WrangleDataPie, variable = 'deces_inst')
-
-list_pie_age <- map(df_pie_cas_vus, PlotPie, colour_scheme = 'RdBu', facet_var = 'commune')
-map(df_pie_cas_vus, PlotPie, colour_scheme = 'viridis', retain.order = T)
-map(df_pie_cas_vus, PlotPie, colour_scheme = 'RdBu', key = 'commune', retain.order = F)
-
-# horizontal bar chart
-map(df_pie_cas_vus, PlotBar, colour_scheme = 'RdBu', facet_var = 'commune')
-
-
-# maps
-## read in population data
-df_map <- map(list_dat, WrangleDataMapPopAR)
-list_map <- map(df_map, MakeMapAR)
 
 ## read in WASH data
 WrangleDataMapWash <- function(data = NULL) {

@@ -71,7 +71,8 @@ MergeAges <- function(data = NULL){
       key = str_replace_all(key, fixed('_5+'), '')
       # key = str_replace_all(key, 'deces.*', 'deces')
     ) %>% 
-    group_by(dept, inst, commune, date, key) %>% 
+    # group_by(dept, inst, commune, date, key) %>% 
+    group_by(inst, commune, date, key) %>% 
     summarise(value = sum(value, na.rm = TRUE)) %>% 
     ungroup
   
@@ -305,8 +306,8 @@ MakeTable <- function(data){
 }
 
 
-WrangleDataMapPopAR <- function(data = NULL) {
-  
+WrangleDataMapPopAR <- function(data = NULL, dept = NULL) {
+  # browser()
   library(rgeos)
   library(maptools)
   # maptools::gpclibPermit()
@@ -338,7 +339,8 @@ WrangleDataMapPopAR <- function(data = NULL) {
         full_join(    
           read_excel(
             'data/population.xlsx', 
-            sheet = df_commune_sheets$sheet[df_commune_sheets$commune == unique(data$dept)],
+            # sheet = df_commune_sheets$sheet[df_commune_sheets$commune == unique(data$dept)],
+            sheet = df_commune_sheets$sheet[df_commune_sheets$commune == dept],
             skip = 4) %>% 
             select(c(1, 3)) %>% 
             set_names(c('commune', 'pop')) %>% 
