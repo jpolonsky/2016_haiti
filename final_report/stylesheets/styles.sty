@@ -1,0 +1,85 @@
+%\usepackage[top=1in, bottom=1in, left=1in, right=1in]{geometry}
+%\geometry{top=1in, bottom=1in, left=1in, right=1in}
+\geometry{
+  %left=24.8mm, % left margin
+  %textwidth=100mm, % main text block
+  %marginparsep=8.2mm, % gutter between main text block and margin notes
+  %marginparwidth=49.4mm, % width of margin notes
+  bottom=1in
+}
+
+
+
+\usepackage{setspace}
+\usepackage{graphicx}
+\usepackage{subfig}
+\usepackage[UKenglish]{babel,isodate}% http://ctan.org/pkg/babel
+\usepackage[nottoc]{tocbibind}
+\setcounter{tocdepth}{4}
+\setcounter{secnumdepth}{-2}
+
+\usepackage{amsmath,amssymb} %allows use of maths symbols
+
+\makeatletter % this renews the paragraph setting to behave more like a 'subsubsubsection'
+\renewcommand\paragraph{\@startsection{paragraph}{4}{\z@}%
+            {-2.5ex\@plus -1ex \@minus -.25ex}%
+            {1.25ex \@plus .25ex}%
+            {\normalfont\normalsize\bfseries}}
+\makeatother
+
+\usepackage{fancyhdr}
+\pagestyle{fancyplain}
+\usepackage{lastpage}
+\fancyhf[HRO]{Yellow Fever, DRC}
+\fancyhf[HLO]{}
+\fancyhf[HRE]{Yellow Fever, DRC}
+%\fancyfoot[C]{\sffamily\fontsize{9pt}{9pt}\selectfont\thepage}
+\fancyfoot[C]{\fontsize{9pt}{9pt}\thepage}
+
+\raggedbottom
+\setlength\parindent{0pt} % sets indent to zero
+\setlength{\parskip}{2mm}
+
+\usepackage{hyperref}
+\usepackage[usenames,dvipsnames]{xcolor}
+\hypersetup{
+    colorlinks,
+    citecolor=black,
+    filecolor=black,
+    linkcolor=BlueViolet,
+    urlcolor=BlueViolet
+}
+\usepackage{colortbl}
+\definecolor{whoblue}{rgb}{0.00, 0.60, 0.80}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+%\usepackage{soul} %for highlighting text [\hl{TEXT}]
+
+%\IfFileExists{bergamo.sty}{\usepackage[osf]{bergamo}}{}% Bembo
+%\IfFileExists{chantill.sty}{\usepackage{chantill}}{}% Gill Sans
+%\IfFileExists{opensans.sty}{\usepackage[default,scale=0.95]{opensans}}{}
+%\usepackage[default,scale=0.95]{opensans}
+%\usepackage{fontspec} % For use with xelatex, not pdflatex!!
+%\setmainfont{Arial}
+
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{pdflscape}
+\usepackage{pdfpages} %for inserting PDFs into document
+\usepackage{rotating}
+\usepackage{longtable}
+
+%\usepackage[labelfont=bf]{caption} % package clash for some reason - use below 2 commands instead!!
+\usepackage{caption}
+\captionsetup{labelfont=bf}
+
+\usepackage{float}
+\floatplacement{figure}{H}
+
+\makeatletter
+\newenvironment{keeppage}{\let\thispagestyle=\@gobble}{}
+\makeatother
+
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
