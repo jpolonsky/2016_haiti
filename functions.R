@@ -1,12 +1,11 @@
-library(readxl)
+library(tidyverse)
 library(stringr)
-library(dplyr)
-library(magrittr)
-library(tidyr)
-library(purrr)
+library(readxl)
 library(lubridate)
-library(ggplot2)
+library(magrittr)
 # library(extrafont)
+
+DisplayResult <- function(variable) df_nested %>% filter(dept %in% list_depts) %>% extract2(variable) %>% extract2(1)
 
 WrangleData <- function(dept = NULL){
   
