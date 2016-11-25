@@ -5,7 +5,24 @@ library(lubridate)
 library(magrittr)
 # library(extrafont)
 
+# displays the results from the nested dataframe
 DisplayResult <- function(variable) df_nested %>% filter(dept %in% list_depts) %>% extract2(variable) %>% extract2(1)
+
+# standard clean theme for the plots
+theme_report <- 
+  theme_bw() +
+  theme(
+    legend.title = element_text(family = 'Palatino', size = 6, face = 'bold'),
+    legend.text = element_text(family = 'Palatino', size = 5),
+    legend.key.size = unit(.4, 'cm'), 
+    axis.title = element_text(family = 'Palatino', size = 6, face = 'bold'),
+    axis.text = element_text(family = 'Palatino', size = 5),
+    axis.ticks = element_blank(),
+    panel.grid.major = element_line(size = .3),
+    panel.grid.minor  = element_blank(),
+    strip.background = element_rect(fill = 'white'),
+    strip.text = element_text(size = 5, family = 'Palatino', face = 'bold')
+  )
 
 WrangleData <- function(dept = NULL){
   
@@ -81,12 +98,11 @@ MergeAges <- function(data = NULL){
 
 PlotHistDay <- function(data = NULL){
   
-  ggplot(
-    data %>% 
-      filter(key %in% 'cas_vus') %>% 
-      group_by(date) %>% 
-      summarise(value = sum(value))
-  ) +
+  data %>% 
+    filter(key %in% 'cas_vus') %>% 
+    group_by(date) %>% 
+    summarise(value = sum(value)) %>% 
+  ggplot() +
     geom_col(aes(x = date, y = value)) +
     geom_text(
       data =
@@ -96,15 +112,10 @@ PlotHistDay <- function(data = NULL){
         summarise(total = sum(value)),
       aes(x = date, y = total + max(total)/50, label = total), size = 1
     ) +
-    labs(x = 'Date', y = '# cases') +
     # ggthemes::theme_tufte(base_family = 'Palatino') +
-    theme_bw() +
-    theme(
-      axis.title = element_text(size = 6, family = 'Palatino', face = 'bold'), 
-      axis.text = element_text(size = 5, family = 'Palatino'),
-      panel.border  = element_blank(),
-      axis.ticks = element_blank()
-    ) 
+    theme_report +
+    theme(panel.border = element_blank()) +
+    labs(x = 'Date', y = '# cases')
   
 }
 
@@ -127,88 +138,58 @@ PlotHistDayInst <- function(data = NULL){
     filter(value == 0) %>% 
     c
   
-  ggplot(
-    dat %>% filter(!inst %in% exclude$inst)
-  ) +
+  dat %>% 
+    filter(!inst %in% exclude$inst) %>% 
+    ggplot() +
     geom_col(aes(x = date, y = value)) +
     facet_wrap(~ inst) +
-    labs(x = 'Date', y = '# cases') +
-    # ggthemes::theme_tufte(base_family = 'Palatino') +
-    theme_bw() +
-    theme(
-      legend.position = 'none', 
-      axis.title = element_text(size = 6, family = 'Palatino', face = 'bold'), 
-      axis.text.x = element_text(size = 5, angle = 45, family = 'Palatino'),
-      axis.text.y = element_text(size = 5, family = 'Palatino'),
-      panel.grid.major = element_line(size = .3),
-      panel.grid.minor  = element_blank(),
-      strip.background = element_rect(fill = 'white'),
-      strip.text = element_text(size = 5, family = 'Palatino', face = 'bold'),
-      axis.ticks = element_blank()
-    )
+    theme_report +
+    labs(x = 'Date', y = '# cases')
   
 }
 
 
 PlotHistWeek <- function(data = NULL){
   
-  tmp <- 
-    data %>% 
+  data %>% 
     mutate(epiweek = epitools::as.week(date)[['week']]) %>%
     group_by(inst, commune, epiweek, key) %>%
-    summarise(value = sum(value))
-  
-  ggplot(tmp) +
+    summarise(value = sum(value)) %>% 
+    ggplot() +
     geom_col(aes(x = epiweek, y = value)) +
     # geom_col(aes(x = epiweek, y = value, fill = commune)) +
     # scale_fill_viridis(discrete = TRUE) +
     geom_text(
-      data = tmp %>% group_by(epiweek) %>% summarise(total = sum(value)), 
+      data = 
+        data %>% 
+        mutate(epiweek = epitools::as.week(date)[['week']]) %>%  
+        group_by(epiweek) %>% 
+        summarise(total = sum(value)), 
       aes(x = epiweek, y = total + max(total)/50, label = total), size = 1
     ) +
-    labs(x = 'Epiweek 2016', y = '# cases') +
-    # ggthemes::theme_tufte()
-    theme_bw()
+    theme_report +
+    theme(
+      legend.position = 'none', 
+      axis.text.x = element_text(size = 5, angle = 45, family = 'Palatino')
+    ) +
+    labs(x = 'Epiweek 2016', y = '# cases')
   
 }
 
 
 PlotHistWeekCommune <- function(data = NULL){
   
-  dat <- 
-    data %>%
-    # list_dat_post_hurr[[1]] %>% 
+  data %>%
     filter(key == 'cas_vus') %>% 
     mutate(epiweek = epitools::as.week(date)[['week']]) %>%
     group_by(commune, epiweek) %>%
-    summarise(value = sum(value))
-  
-  # exclude <- 
-  #   dat %>% 
-  #   group_by(commune) %>% 
-  #   summarise(value = sum(value)) %>% 
-  #   filter(value == 0) %>% 
-  #   c
-  
-  ggplot(
-    # dat %>% filter(!commune %in% exclude$commune)
-    dat
-  ) +
+    summarise(value = sum(value)) %>% 
+    ggplot() +
     geom_col(aes(x = epiweek, y = value)) +
     facet_wrap(~ commune) +
-    labs(x = 'Epiweek 2016', y = '# cases') +
-    # ggthemes::theme_tufte(base_family = 'Palatino') +
-    theme_bw() +
-    theme(
-      legend.position = 'none', 
-      axis.title = element_text(size = 6, family = 'Palatino', face = 'bold'), 
-      axis.text = element_text(size = 5, family = 'Palatino'),
-      panel.grid.major = element_line(size = .3),
-      panel.grid.minor  = element_blank(),
-      strip.background = element_rect(fill = 'white'),
-      strip.text = element_text(size = 5, family = 'Palatino', face = 'bold'),
-      axis.ticks = element_blank()
-    )
+    theme_report +
+    theme(legend.position = 'none') +
+    labs(x = 'Epiweek 2016', y = '# cases')
   
 }
 
@@ -217,7 +198,6 @@ PlotHistWeekInst <- function(data = NULL){
   
   dat <- 
     data %>%
-    # list_dat_post_hurr[[1]] %>%
     filter(key == 'cas_vus') %>% 
     ungroup() %>% 
     mutate(inst = ifelse(inst == 'UTC', paste(inst, commune), inst)) %>% 
@@ -238,19 +218,8 @@ PlotHistWeekInst <- function(data = NULL){
     geom_col(aes(x = epiweek, y = value)) +
     facet_wrap(~inst) +
     labs(x = 'Epiweek 2016', y = '# cases') +
-    theme(legend.position = 'none', axis.line = element_line(color = "black")) +
-    # ggthemes::theme_tufte() +
-    theme_bw() +
-    theme(
-      legend.position = 'none', 
-      axis.title = element_text(size = 6, family = 'Palatino', face = 'bold'), 
-      axis.text = element_text(size = 5, family = 'Palatino'),
-      panel.grid.major = element_line(size = .3),
-      panel.grid.minor  = element_blank(),
-      strip.background = element_rect(fill = 'white'),
-      strip.text = element_text(size = 5, family = 'Palatino', face = 'bold'),
-      axis.ticks = element_blank()
-    )
+    theme_report +
+    theme(legend.position = 'none')
   
 }
 
@@ -261,7 +230,6 @@ MakeTable <- function(data){
   
   tmp <- 
     data %>%
-    # list_dat_post_hurr[[1]] %>%
     filter(!key == 'cas_hosp') %>%
     ungroup() %>% 
     mutate(inst = ifelse(inst == 'UTC', paste(inst, commune), inst)) %>% 
@@ -296,7 +264,6 @@ MakeTable <- function(data){
     unite(cas_vus, cas_vus:`% cas`, sep = ' ') %>% 
     unite(deces_inst, deces_inst:`% deces_inst`, sep = ' ') %>% 
     unite(deces_comm, deces_comm:`% deces_comm`, sep = ' ') %>% 
-    # set_names(c('Commune', 'UTC/CTC', 'Cas', '% cas', 'Décès inst.', '% décès inst.', 'Décès comm.', '% décès comm', 'Total décès'))
     set_names(c('Commune', 'UTC/CTC', 'Cas (%)', 'Décès inst. (%)', 'Décès comm. (%)', 'Total décès'))
   
   
@@ -305,23 +272,36 @@ MakeTable <- function(data){
 }
 
 
-WrangleDataMapPopAR <- function(data = NULL, dept = NULL) {
-  # browser()
-  library(rgeos)
-  library(maptools)
-  # maptools::gpclibPermit()
-  map_haiti <- rgdal::readOGR(dsn = 'map', layer = 'HTI_adm3')
-  map_haiti@data$id <- rownames(map_haiti@data)
-  df_map_haiti <- 
-    fortify(map_haiti, region = 'id') %>% 
-    inner_join(map_haiti@data, by = 'id') %>% 
-    tbl_df
+PrepareMapData <- function(map_shp){
+  
+  map_shp@data$id <- rownames(map_shp@data)
+  
+  map_shp %>% 
+    fortify(region = 'id') %>% 
+    inner_join(
+      map_shp@data %>% mutate(id = rownames(.)), by = 'id'
+    ) %>% 
+    tbl_df  
+  
+}
+
+WrangleDataMapPopAR <- function(data = NULL, dept = NULL, df_map = NULL) {
+
+  # library(rgeos)
+  # library(maptools)
+  # # maptools::gpclibPermit()
+  # map_haiti <- rgdal::readOGR(dsn = 'map', layer = 'HTI_adm3')
+  # map_haiti@data$id <- rownames(map_haiti@data)
+  # df_map_haiti <- 
+  #   fortify(map_haiti, region = 'id') %>% 
+  #   inner_join(map_haiti@data, by = 'id') %>% 
+  #   tbl_df
   
   df_commune_sheets <-
     data_frame(commune = c('DSGA', 'DSS'), sheet = c('Dept_Grand anse', 'Dept_Sud'))
   
-  dat <- 
-    df_map_haiti %>%
+  # df_map_haiti %>%
+  df_map %>%
     mutate(
       NAME_3 = str_replace_all(NAME_3, "-", ' '),
       NAME_3 = str_replace_all(NAME_3, "é|è", 'e'),
@@ -363,31 +343,68 @@ WrangleDataMapPopAR <- function(data = NULL, dept = NULL) {
         mutate(ar = cases/pop*10000), 
       by = c('NAME_3' = 'commune'))
   
-  return(dat)
-  
 }
 
 
-MakeMapAR <- function(data){
+MakeMapMain <- function(data, dept = NULL, df_map = NULL, key = NULL) {
+
+  df_dept_names <- data_frame(short = c('DSGA', 'DSS'), full = c("Grand'Anse", 'Sud'))
+  map_dept <- df_map[df_map@data$NAME_1 %in% df_dept_names[df_dept_names$short %in% dept, 2], ]
+  
+  commune_names <-
+    sp::coordinates(map_dept) %>%
+    tbl_df() %>%
+    set_names(c('long', 'lat')) %>%
+    mutate(label = map_dept@data$NAME_3)
   
   ggplot(data) +
-    geom_polygon(aes(long, lat, group = group, fill = ar), colour = 'white', size = .2) +
+    geom_polygon(aes(long + 0.008, lat - 0.005, group = group), fill = "#9ecae1") +
+    geom_polygon(aes_string('long', 'lat', group = 'group', fill = key), colour = 'black', size = .2) +
+    geom_text(data = commune_names, aes(long, lat, label = label), family = 'Palatino', fontface = 'bold', size = 1) +
     coord_equal() +
-    ggthemes::theme_tufte(base_family = 'Palatino') +
     scale_fill_gradient(name = "TA (#/10,000)", low = 'lightyellow', high = 'darkred', na.value = "lightgrey", labels = scales::comma) +
-    # viridis::scale_fill_viridis(labels = scales::comma) +
-    theme(
-      legend.title = element_text(size = 6, face = 'bold'),
-      legend.text = element_text(size = 5),
-      legend.key.size = unit(.4, 'cm'), 
-      axis.title = element_text(size = 6, face = 'bold'),
-      axis.text = element_text(size = 5),
-      axis.ticks = element_blank()
-    ) +
+    theme_report +
+    theme(axis.text.y = element_text(angle = 90, hjust = 0.5)) +
     labs(x = 'Longitude', y = 'Latitude')
   
 }
 
+
+MakeMapInset <- function(data, dept = NULL, df_map = NULL){
+  
+  df_dept_names <- data_frame(short = c('DSGA', 'DSS'), full = c("Grand'Anse", 'Sud'))
+  map_dept <- df_map[df_map@data$NAME_1 %in% df_dept_names[df_dept_names$short == dept, 2], ]
+  
+  ## define object limits
+  ggobj <- 
+    map_dept %>% 
+    fortify(region = 'id') %>% 
+    inner_join(
+      map_dept@data %>% mutate(id = rownames(.)), by = 'id'
+    ) %>% 
+    ggplot() + 
+    geom_polygon(aes(long, lat, group = group)) + 
+    coord_equal()
+  
+  xlim <- ggplot_build(ggobj)$layout$panel_ranges[[1]]$x.range
+  ylim <- ggplot_build(ggobj)$layout$panel_ranges[[1]]$y.range
+  inset_frame <- data_frame(xmin = xlim[1], xmax = xlim[2], ymin = ylim[1], ymax = ylim[2])
+  
+  ggplot(map_shps$adm1) + 
+    geom_polygon(aes(long, lat, group = group), col = 'black', fill = 'lightgrey', size = .1) +
+    geom_rect(
+      data = inset_frame, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax), 
+      alpha = 0, colour = 'darkred', size = .25, linetype = 2
+    ) +
+    coord_equal() + 
+    theme_report + 
+    theme(
+      axis.text = element_blank(), 
+      axis.title = element_blank(),
+      panel.grid = element_blank()
+    )
+  
+}
 
 # pie charts
 WrangleDataPie <- function(data = NULL, variable = NULL){
@@ -401,7 +418,7 @@ WrangleDataPie <- function(data = NULL, variable = NULL){
 #' Pie plot
 #' @export
 PlotPie <- function(data, key = 'key', value = 'value', colour_scheme = 'Blues', title = NULL, facet_var = NULL, retain.order = F){
-  # browser()
+  
   tmp <-
     if(is.null(facet_var)) {
       eval(substitute(
@@ -492,20 +509,18 @@ PlotPie <- function(data, key = 'key', value = 'value', colour_scheme = 'Blues',
           values = if(colour_scheme %in% c('viridis', 'Viridis')) viridis::viridis(length(unique(tmp[[key]])))
           else colorRampPalette(RColorBrewer::brewer.pal(9, colour_scheme))(length(unique(tmp[[key]])))
         ) +
-        ggthemes::theme_tufte(base_family = 'Palatino') +
+        labs(x = '', y = '', title = ifelse(title %in% NULL, NULL, paste0(title))) +
+        theme_report +
         theme(
           panel.border = element_blank(),
-          plot.title = element_text(size = 12, face = 'bold', color = 'darkblue'),
           legend.key = element_blank(),
           legend.position = '',
-          axis.ticks.y = element_blank(),
           axis.text.y = element_blank(),
           panel.grid  = element_blank()
-        ) +
-        labs(x = '', y = '', title = ifelse(title %in% NULL, NULL, paste0(title)))
+        )
       
     } else {
-      # browser()
+      
       ggplot(tmp) +
         geom_col(
           aes_string(x = 1, y = 'prop', fill = key),
@@ -518,22 +533,18 @@ PlotPie <- function(data, key = 'key', value = 'value', colour_scheme = 'Blues',
           values = if(colour_scheme %in% c('viridis', 'Viridis')) viridis::viridis(length(unique(tmp[[key]])))
           else colorRampPalette(RColorBrewer::brewer.pal(9, colour_scheme))(length(unique(tmp[[key]])))
         ) +
-        # ggthemes::theme_tufte(base_family = 'Palatino') +
-        theme_bw() +
+        labs(x = '', y = '', title = ifelse(title %in% NULL, NULL, paste0(title))) +
+        theme_report +
         theme(
-          plot.title = element_text(size = 12, face = 'bold', color = 'darkblue'),
-          legend.title = element_text(size = 4, family = 'Palatino', face = 'bold'),
-          legend.text = element_text(size = 3, family = 'Palatino'),
+          legend.title = element_text(size = 4),
+          legend.text = element_text(size = 3),
           legend.key = element_blank(),
-          # legend.position = '',
           legend.key.size = unit(.2, 'cm'), 
           axis.ticks.y = element_blank(),
           axis.text.y = element_blank(),
-          strip.text = element_text(size = 3, family = 'Palatino', face = 'bold'),
-          strip.background = element_rect(fill = 'white'),
+          strip.text = element_text(size = 3),
           panel.grid  = element_blank()
-        ) +
-        labs(x = '', y = '', title = ifelse(title %in% NULL, NULL, paste0(title)))
+        )
       
     }
   
@@ -552,7 +563,6 @@ PlotBar <- function(data, key = 'key', value = 'value', facet_var = NULL, title 
     summarise_(value = lazyeval::interp(~ round(sum(var)), var = as.name(value))) %>% 
     mutate(prop = round(value/sum(value), 2))
     
-  # browser()
   tmp[[key]] <- forcats::fct_rev(tmp[[key]])
   tmp[[facet_var]] <- forcats::fct_rev(tmp[[facet_var]])
   
@@ -565,21 +575,15 @@ PlotBar <- function(data, key = 'key', value = 'value', facet_var = NULL, title 
     ) +
     scale_y_continuous(labels = scales::percent) +
     coord_flip() +
-    ggthemes::theme_tufte(base_family = 'Palatino') +
-    # theme_bw() +
+    theme_report +
     theme(
       panel.border = element_blank(),
-      plot.title = element_text(size = 12, face = 'bold', color = 'darkblue'),
-      legend.text = element_text(size = 5, family = 'Palatino', face = 'bold'),
-      legend.key = element_blank(),
-      legend.key.size = unit(.4, 'cm'), 
-      axis.text.x = element_text(size = 5),
       axis.text.y = element_text(size = 6, face = 'bold'),
+      legend.key = element_blank(),
       legend.position = 'bottom',
-      legend.title = element_blank(),
-      axis.ticks = element_blank()
+      legend.title = element_blank()
     ) +
-    guides(guide_legend(reverse = T)) +
+    # guides(guide_legend(reverse = T)) +
     labs(title = '', x = '', y = title)
 
 }  

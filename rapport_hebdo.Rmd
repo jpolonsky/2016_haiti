@@ -19,7 +19,8 @@ params:
 knitr::opts_chunk$set(cache=FALSE, message=FALSE, echo=FALSE, warning=FALSE, results='asis')
 knitr::knit_hooks$set(inline = function(x) if (is.numeric(x)) round(x, 1) )
 
-load('ws.RData')
+# load('ws.RData')
+load('map/maps.RData')
 source('functions.R')
 
 list_db_paths <- dir('data', full.names = TRUE)
@@ -28,30 +29,50 @@ list_depts <-
   str_replace_all(c('data/' = '', '[-_]Surveillance Cholera.*' = ''))
 list_depts <- params$dep_san
 
-# df_nested <-
-#   list_depts %>%
-#   map(WrangleData) %>%
-#   bind_rows() %>%
-#   nest(-c(dept), .key = data_by_age) %>%
-#   mutate(
-#     # data sets
-#     data = map(data_by_age, MergeAges),
-#     data_pie = map(data_by_age, WrangleDataPie, variable = 'cas_vus'),
-#     data_map = map2(data, dept, WrangleDataMapPopAR),
-#     # table
-#     epitable = map(data, MakeTable),
-#     # plots
-#     ## epicurves
-#     epicurve_by_day_all = map(data, PlotHistDay),
-#     # epicurve_by_week_all = map(data, PlotHistWeek),
-#     epicurve_by_week_commune = map(data, PlotHistWeekCommune),
-#     epicurve_by_week_inst = map(data, PlotHistWeekInst),
-#     ## proportion plots
-#     pie_cases_by_commune = map(data_pie, PlotPie, colour_scheme = 'RdBu', key = 'commune'),
-#     bar_cases_by_commune = map(data_pie, PlotBar, colour_scheme = 'RdBu', facet_var = 'commune'),
-#     ## map
-#     map = map(data_map, MakeMapAR)
-#   )
+# if maps are available as local shapefiles
+# library(rgeos)
+# library(maptools)
+# # maptools::gpclibPermit()
+# map_haiti <- rgdal::readOGR(dsn = 'map', layer = 'HTI_adm3')
+# map_haiti@data$id <- rownames(map_haiti@data)
+# map_shps <- list()
+# map_shps$adm1 <-
+#   fortify(map_haiti, region = 'id') %>%
+#   inner_join(map_haiti@data, by = 'id') %>%
+#   tbl_df
+
+# download maps directly at correct admin levels
+# hti_adm1 <- raster::getData('GADM', country = 'HTI', level = 1)
+# hti_adm3 <- raster::getData('GADM', country = 'HTI', level = 3)
+map_shps <- map(c(hti_adm1, hti_adm3), PrepareMapData) %>% set_names(c('adm1', 'adm3'))
+
+df_nested <-
+  list_depts %>% 
+  map(WrangleData) %>% 
+  set_names(list_depts) %>% 
+  bind_rows() %>% 
+  nest(-c(dept), .key = data_by_age) %>%
+  mutate(
+    # data sets
+    data = map(data_by_age, MergeAges),
+    data_pie = map(data_by_age, WrangleDataPie, variable = 'cas_vus'),
+    # data_map = map2(data, dept, WrangleDataMapPopAR),
+    data_map = list(data, dept = dept, df_map = list(map_shps$adm3)) %>% pmap(WrangleDataMapPopAR),
+    # table
+    epitable = map(data, MakeTable),
+    # plots
+    ## epicurves
+    epicurve_by_day_all = map(data, PlotHistDay),
+    epicurve_by_week_all = map(data, PlotHistWeek),
+    epicurve_by_week_commune = map(data, PlotHistWeekCommune),
+    epicurve_by_week_inst = map(data, PlotHistWeekInst),
+    ## proportion plots
+    pie_cases_by_commune = map(data_pie, PlotPie, colour_scheme = 'RdBu', key = 'commune'),
+    bar_cases_by_commune = map(data_pie, PlotBar, colour_scheme = 'RdBu', facet_var = 'commune'),
+    ## map
+    map_main = list(data_map, dept = dept, df_map = list(hti_adm3), key = 'ar') %>% pmap(MakeMapMain),
+    map_inset = list(data_map, dept = dept, df_map = list(hti_adm3)) %>% pmap(MakeMapInset)
+  )
 ```
 
 # Analyse des données de diarrhées aigues:
@@ -90,7 +111,10 @@ if(knitr::opts_knit$get("rmarkdown.pandoc.to") %in% c('docx', 'html')) knitr::ka
 \newpage
 
 ```{r, fig.fullwidth = TRUE, fig.height=5, fig.cap = paste0("Répresentation du taux d'attaque des cas de diarrhées aigues par 10,000 personnes, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " par commune, Grand’Anse (données partielles).")}
-DisplayResult('map')
+v1 <- grid::viewport(width = 1, height = 1, x = 0.5, y = 0.5) # plot area for the main map
+v2 <- grid::viewport(width = 0.3, height = 0.2, x = 0.65, y = 0.68) # plot area for the inset map
+DisplayResult('map_main') %>% print(vp = v1)
+DisplayResult('map_inset') %>% print(vp = v2)
 ```
 
 \newpage
