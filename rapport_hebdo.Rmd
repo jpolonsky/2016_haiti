@@ -54,19 +54,13 @@ list_depts <- params$dep_san
 #   )
 ```
 
-<!-- -	Analyse base de données de diarrhées aigues sévères de la Grand’Anse -->
-<!-- -	Investigation de décès institutionnels a Dame Marie, Recherche active communautaire et reponse -->
-<!-- -	Evaluation de la qualité des données cholera a Dame Marie, Chambellan et Moron -->
-
 # Analyse des données de diarrhées aigues:
 
 ```{r, fig.fullwidth = TRUE, fig.cap = paste0("Tendance des cas de diarrhées aigues, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " Grand’Anse (données partielles).")}
-# plot by day
 DisplayResult('epicurve_by_day_all')
 ```
 
 ```{r, fig.fullwidth = F, fig.height = 3, fig.cap = paste0("Répartition des cas de diarrhées aigues par commune, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " Grand’Anse (données partielles).")}
-# df_nested$pie_cases_by_commune[[list_depts]]
 DisplayResult('pie_cases_by_commune')
 ```
 
@@ -102,7 +96,6 @@ DisplayResult('map')
 \newpage
 
 ```{r, fig.fullwidth = TRUE, fig.height=4, fig.cap = paste0("Tendance des cas de diarrhées aigues, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " par commune, Grand’Anse (données partielles).")}
-# by week & commune
 DisplayResult('epicurve_by_week_commune')
 ```
 

@@ -103,6 +103,11 @@ Version: 0.1.1
 Hash: 7f93e560ba45f278e1d66df743747d2a
 Requires: magrittr, tibble
 
+Package: formatR
+Source: CRAN
+Version: 1.4
+Hash: b2a47a2b91737978cf50ba95825a9cd1
+
 Package: ggplot2
 Source: CRAN
 Version: 2.2.0
@@ -253,6 +258,12 @@ Source: CRAN
 Version: 0.2.2
 Hash: 883eb391742d94eb62d05aa8c5055211
 Requires: BH, Rcpp, dplyr, lazyeval, magrittr
+
+Package: raster
+Source: CRAN
+Version: 2.5-8
+Hash: 83aec067b01083d1fb8a2afa36d7eef5
+Requires: Rcpp, sp
 
 Package: readr
 Source: CRAN
