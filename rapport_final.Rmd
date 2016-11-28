@@ -15,24 +15,115 @@ output:
 
 ```{r, cache=FALSE, message=FALSE, echo=FALSE, warning=FALSE, results='hide'}
 knitr::opts_chunk$set(cache=FALSE, message=FALSE, echo=FALSE, warning=FALSE, results='asis')
-knitr::knit_hooks$set(inline = function(x) if (is.numeric(x)) round(x, 1) )
 
 load('ws.RData')
+load('map/maps.RData')
 source('functions.R')
+
+library(tufte)
 ```
 
-<!-- # Post-Hurricane Matthew réponse
-# Mission report on epidemiology, surveillance & data management
-*Jonathan Polonsky, Epidemiologist, WHO Emergencies Programme* -->
-
 ## Background
+`r newthought('On 4 October, Hurricane Matthew')` violently struck Haiti and resulted in the country’s largest humanitarian emergency since the 2010 earthquake. It caused extensive flooding and mudslides, damage to road infrastructure and buildings, as well as electricity and water shortages. The latest figures from the governmental Directorate of Civil Protection (DPC) of Haiti have so far confirmed 546 deaths and 438 injured as a result of the hurricane.
+ 
+Humanitarian needs are said to include access to a sufficient supply of quality water, education, shelter, child protection, health, and nutrition. Of the 1.4 million people who need humanitarian assistance, more than 40 per cent are children who are mainly in the Grand’Anse and Sud Departments
 
+In this context, I was deployed for just over 2 weeks as a field epidemiologist to Jeremie, the departmental capital of Grand’Anse, to analyse the situation and provide support to the PAHO country office in assisting the Ministère de la Santé Publique et de la Population (MSPP) in re-establishing/strengthening epidemic-prone disease surveillance in the affected areas.
 
-## Overview
+## Data collection, management, analysis & reporting
+`r newthought('An initial assessment of')` the ongoing data collection, management and reporting system in place for suspected cholera highlighted potential areas for rapid gains. The processes that feed into these components are described below:
+
+### Data collection & management
+`r newthought('Every day, the PAHO field epiemiologist')` or the MSPP departmental epidemiologist telephone each Cholera Treatment Centre/Unit (CTC/UTC) to get aggregated information read to them: # cases seen; # cases hospitalised; # institutional deaths; # community deaths. All of these are reported for two age groups: <5 and 5+ years. These phone calls were made twice per day - the first to report overnight changes, and a follow up call made later in the day to find out any further changes during the day. 
+
+The data are entered into an excel workbook. With each new day, eight new columns must be added (representing the four variables and two age groups for each). This workbook has data going back to 1st Jan 2012, and is now very wide (> 14,500 columns) and heavy (~ 40MB). The workbook is (sensibly) protected, but this means that analysing the data is cumbersome - the epidemiologist in place was double entering the data each day, once in this workbook and once in a seperate workbook covering just the days since the hurricane.
+
+### Analysis & reporting
+`r newthought('In order to analyse')` the data since hurricane Matthew, some figures had been created within this second, unprotected excel workbook, and each day these could be updated with the new data. However, because there were a large number of figures (some for overall analyses, and one each for the 17 operational CTCs), this was yet anotehr cumbersome process as the data rnage for each needed to be manually updated.
+
+These updated graphs were subsequently copied and pasted into a word document, along with a table of the updated data, and this was circulated each day to relevant partners.
+
+### Changes made
+`r newthought('The following changes were')` implemented:
+
+- Lighter reporting schedule
+    - only one contact made per day to each CTC to reduce burden on both CTC staff and epidemiologist
+        - this should only cover the previous day in completeness
+    - a brief (1-page) report of the previous day with a table of new cases by commune & CTC
+    - a longer in-depth report issued once per week covering the previous epidemic week in completeness (each epidemic week runs from Sunday to Saturday)
+        - broader trends should be analysed on a weekly, not daily basis
+
+- Automated analysis & reporting
+    - As the weekly report has a standardised format, and only needs to take into account updates to the dataset each week, the analysis and reporting were perfect candidates for automation. I wrote a script in the `R statistical language`^[[The R Project for Statistical Computing](https://www.r-project.org/)] to read in the data, analyse it, generate various tables, figures and maps, and output these into a standardised PDF report. The report takes ~20s to generate, rather than >1hr as was previously the case.
+    - This report, apporoved by MSPP at the departmental level, is shared with MSPP before the weekly surveillance meeting each Wednesday, and the responsibility of sharing the report is handed over to MSPP, as the data are of course owned by the country, not PAHO.
+
+## Epidemiological context
+`r newthought('Extracts of the automated')` report are included in this report to demonstrate the outputs and to describe the current epidemiological situation regarding suspected cholera cases in the Département de la Grand’ Anse.
+
+\clearpage
+
+```{r, fig.fullwidth = F, fig.cap = paste0("Tendance des cas de diarrhées aigues, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " Grand’Anse")}
+DisplayResult('epicurve_by_day_all')
+```
+
+\clearpage
+
+\begin{fullwidth}
+\makeatletter\setlength\hsize{\@tufte@fullwidth}\setlength\linewidth{\@tufte@fullwidth}\let\caption\@tufte@orig@caption\makeatother
+\footnotesize
+```{r, tab_overview}
+if(nrow(DisplayResult('epitable'))>1) {rws <- seq(1, nrow(DisplayResult('epitable')) - 1, by = 2)}
+
+DisplayResult('epitable') %>% 
+  xtable::xtable(
+    caption = paste0("Répartition des cas de diarrhées aigues par CTC/UTC, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " Grand’Anse"), 
+    digits = 0, label = "tab_overview", align = 'lllrrrr'
+  ) %>% 
+  print(booktabs = TRUE, caption.placement = "top", add.to.row = list(pos = as.list(rws), command = rep("\\rowcolor{whoblue!15}", length(rws))), include.rownames = FALSE, comment = FALSE, tabular.environment = 'longtable', floating = FALSE)
+```
+\end{fullwidth}
+
+```{r}
+# print table if output is word or html document
+if(knitr::opts_knit$get("rmarkdown.pandoc.to") %in% c('docx', 'html')) knitr::kable(DisplayResult('epitable'))
+```
+
+\clearpage
+
+```{r, fig.fullwidth = TRUE, fig.height=5, fig.cap = paste0("Répresentation du taux d'attaque des cas de diarrhées aigues par 10,000 personnes, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " par commune, Grand’Anse")}
+v1 <- grid::viewport(width = 1, height = 1, x = 0.5, y = 0.5) # plot area for the main map
+v2 <- grid::viewport(width = 0.3, height = 0.2, x = 0.65, y = 0.68) # plot area for the inset map
+DisplayResult('map_main') %>% print(vp = v1)
+DisplayResult('map_inset') %>% print(vp = v2)
+```
+
+\clearpage
+
+```{r, fig.fullwidth = TRUE, fig.height=4, fig.cap = paste0("Tendance des cas de diarrhées aigues, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " par commune, Grand’Anse")}
+DisplayResult('epicurve_by_week_commune')
+```
+
+\clearpage
+
+```{r, fig.fullwidth = TRUE, fig.height=4, fig.cap = paste0("Tendance des cas de diarrhées aigues, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " par CTC, Grand’Anse")}
+DisplayResult('epicurve_by_week_inst')
+```
+
+\clearpage
+
+```{r, fig.fullwidth = F, fig.cap = paste0("Répartition des cas de diarrhées aigues par commune, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " Grand’Anse")}
+DisplayResult('pie_cases_by_commune')
+```
+
+```{r, fig.margin = T, fig.cap = paste0("Répartition des cas de diarrhées aigues par tranche d'age, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " par commune, Grand’Anse")}
+DisplayResult('bar_cases_by_commune')
+```
+
+\clearpage
 
 - need to rebuild surveillance
   + community based
-  + line list to cpature essential variables for analysis
+  + line list to capture essential variables for analysis
   + ewars-like system to improve data flow
   + describe weaknesses
     * 2-level sensitivity analysis
@@ -47,82 +138,11 @@ source('functions.R')
   + multidisciplinary visits for rationalising resources - prevents repeated trips to same locations and added burden to staff at CTCs
   + collecting and comparing 
 
-## Analysis of key indicators
-```{r, fig.fullwidth = TRUE, fig.cap = paste0("Tendance des cas de diarrhées aigues, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " Grand’Anse (données partielles).")}
-DisplayResult('epicurve_by_day_all')
-```
-
-```{r, fig.fullwidth = F, fig.cap = paste0("Répartition des cas de diarrhées aigues par commune, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " Grand’Anse (données partielles).")}
-DisplayResult('pie_cases_by_commune')
-```
-
-\clearpage
-
-\begin{fullwidth}
-\makeatletter\setlength\hsize{\@tufte@fullwidth}\setlength\linewidth{\@tufte@fullwidth}\let\caption\@tufte@orig@caption\makeatother
-\footnotesize
-```{r, tab_overview}
-if(nrow(DisplayResult('epitable'))>1) {rws <- seq(1, nrow(DisplayResult('epitable')) - 1, by = 2)}
-
-DisplayResult('epitable') %>% 
-  xtable::xtable(
-    caption = paste0("Répartition des cas de diarrhées aigues par CTC/UTC, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " Grand’Anse (données partielles)."), 
-    digits = 0, label = "tab_overview", align = 'lllrrrr'
-  ) %>% 
-  print(booktabs = TRUE, caption.placement = "top", add.to.row = list(pos = as.list(rws), command = rep("\\rowcolor{whoblue!15}", length(rws))), include.rownames = FALSE, comment = FALSE, tabular.environment = 'longtable', floating = FALSE)
-```
-\end{fullwidth}
-
-
-```{r}
-# print table if output is word or html document
-if(knitr::opts_knit$get("rmarkdown.pandoc.to") %in% c('docx', 'html')) knitr::kable(DisplayResult('epitable'))
-```
-
-\newpage
-
-```{r, fig.fullwidth = TRUE, fig.height=5, fig.cap = paste0("Répresentation du taux d'attaque des cas de diarrhées aigues par 10,000 personnes, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " par commune, Grand’Anse (données partielles).")}
-DisplayResult('map')
-```
-
-\newpage
-
-```{r, fig.fullwidth = TRUE, fig.height=4, fig.cap = paste0("Tendance des cas de diarrhées aigues, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " par commune, Grand’Anse (données partielles).")}
-DisplayResult('epicurve_by_week_commune')
-```
-
-\newpage
-
-```{r, fig.fullwidth = F, fig.height=3, fig.cap = paste0("Répartition des cas de diarrhées aigues par tranche d'age, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " par commune, Grand’Anse (données partielles).")}
-DisplayResult('bar_cases_by_commune')
-```
-
-\newpage
-
-```{r, fig.fullwidth = TRUE, fig.height=4, fig.cap = paste0("Tendance des cas de diarrhées aigues, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " par CTC, Grand’Anse (données partielles).")}
-DisplayResult('epicurve_by_week_inst')
-```
-
-
-
-## Data collection and management
-### Description of the process
-
 
 ## Recommendations
-- IM and DM/Epi should have closer collaboration
-- Field epis + logs to support surveillance
-- Stronger coordination required - overall surveillance, lab, epi
-- Better system - exists in Angola - forms entered by WHO in morning, then DB passed to lab who enter results, which is then shared back with WHO
-- Eventual plan should be for proper decentralised and disaggregated surveillance system (e.g EWARS), with single, centralised database (one source of truth from which everyone works, incl. MoH, WCO, RO and HQ)
-    + plan for decentralisation only to provincial level
-    + current IDSR is aggregated only
-- training for staff
-- reinforce surveillance on road to, and within, Kikwit
-- Evaluate the sensitivity of the surveillance system (e.g. Rapid capture-recapture study)
-- Somebody should bring epiinfo DB master to CC meeting and work done directly on that DB
-    + or code written to compare last version of lab with what was just sent to identify those with changes
-
+- food security
+- ewars-type 
+- 
 
 ## Annexes
 - Weekly epidemiological bulletin

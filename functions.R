@@ -25,7 +25,7 @@ theme_report <-
   )
 
 WrangleData <- function(dept = NULL){
-  
+  # browser()
   list_path <- list_db_paths[str_detect(list_db_paths, dept) == TRUE]
   
   sheetnames <- excel_sheets(list_path)
