@@ -1,5 +1,6 @@
 ---
 output:
+  word_document: default
   tufte::tufte_handout:
     latex_engine: pdflatex
     pandoc_args:
@@ -8,7 +9,6 @@ output:
     - --include-before-body
     - includes/titlepage.tex
   html_document: default
-  word_document: default
 params:
   dep_san: DSGA
 ---
@@ -19,7 +19,7 @@ params:
 knitr::opts_chunk$set(cache=FALSE, message=FALSE, echo=FALSE, warning=FALSE, results='asis')
 knitr::knit_hooks$set(inline = function(x) if (is.numeric(x)) round(x, 1) )
 
-# load('ws.RData')
+# load('w s.RData')
 load('map/maps.RData')
 source('functions.R')
 

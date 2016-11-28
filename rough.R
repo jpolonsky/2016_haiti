@@ -1,4 +1,5 @@
 # load("ws.RData")
+load('map/maps.RData')
 source('functions.R')
 
 ## read in different page (CTC - 'Saisie Inst')
@@ -9,6 +10,8 @@ list_depts <-
 
 list_depts <- 'DSGA'
 # list_depts <- 'DSS'
+
+map_shps <- map(c(hti_adm1, hti_adm3), PrepareMapData) %>% set_names(c('adm1', 'adm3'))
 
 df_nested <-
   list_depts %>% 

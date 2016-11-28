@@ -187,14 +187,14 @@ PlotHistWeekCommune <- function(data = NULL){
     ggplot() +
     geom_col(aes(x = epiweek, y = value)) +
     facet_wrap(~ commune) +
+    labs(x = 'Epiweek 2016', y = '# cases') +
     theme_report +
-    theme(legend.position = 'none') +
-    labs(x = 'Epiweek 2016', y = '# cases')
+    theme(legend.position = 'none')
   
 }
 
 
-PlotHistWeekInst <- function(data = NULL){
+PlotHistWeekInst <- function(data = NULL, colour_scheme = 'Spectral'){
   
   dat <- 
     data %>%
@@ -202,8 +202,10 @@ PlotHistWeekInst <- function(data = NULL){
     ungroup() %>% 
     mutate(inst = ifelse(inst == 'UTC', paste(inst, commune), inst)) %>% 
     mutate(epiweek = epitools::as.week(date)[['week']]) %>%
-    group_by(inst, epiweek, key) %>%
+    group_by(commune, inst, epiweek, key) %>%
     summarise(value = sum(value))
+  
+  dat$inst <- forcats::fct_inorder(dat$inst)
   
   exclude <- 
     dat %>% 
@@ -212,14 +214,15 @@ PlotHistWeekInst <- function(data = NULL){
     filter(value == 0) %>% 
     c
   
-  ggplot(
-    dat %>% filter(!inst %in% exclude$inst)
-  ) +
-    geom_col(aes(x = epiweek, y = value)) +
-    facet_wrap(~inst) +
+  dat %>% 
+    filter(!inst %in% exclude$inst) %>% 
+    ggplot() +
+    geom_col(aes(x = epiweek, y = value, fill = commune), colour = 'black', size = .25) +
+    scale_fill_manual(values = colorRampPalette(RColorBrewer::brewer.pal(9, colour_scheme))(length(unique(dat$commune)))) +
+    facet_wrap(~ inst) +
     labs(x = 'Epiweek 2016', y = '# cases') +
     theme_report +
-    theme(legend.position = 'none')
+    theme(legend.position = 'bottom')
   
 }
 
@@ -287,20 +290,9 @@ PrepareMapData <- function(map_shp){
 
 WrangleDataMapPopAR <- function(data = NULL, dept = NULL, df_map = NULL) {
 
-  # library(rgeos)
-  # library(maptools)
-  # # maptools::gpclibPermit()
-  # map_haiti <- rgdal::readOGR(dsn = 'map', layer = 'HTI_adm3')
-  # map_haiti@data$id <- rownames(map_haiti@data)
-  # df_map_haiti <- 
-  #   fortify(map_haiti, region = 'id') %>% 
-  #   inner_join(map_haiti@data, by = 'id') %>% 
-  #   tbl_df
-  
   df_commune_sheets <-
     data_frame(commune = c('DSGA', 'DSS'), sheet = c('Dept_Grand anse', 'Dept_Sud'))
   
-  # df_map_haiti %>%
   df_map %>%
     mutate(
       NAME_3 = str_replace_all(NAME_3, "-", ' '),
