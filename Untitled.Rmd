@@ -5,7 +5,7 @@ date: '`r Sys.Date()`'
 output:
   tufte::tufte_handout:
     citation_package: natbib
-    latex_engine: pdflatex
+    latex_engine: xelatex
   tufte::tufte_book:
     citation_package: natbib
     latex_engine: xelatex
