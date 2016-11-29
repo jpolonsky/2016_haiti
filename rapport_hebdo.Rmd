@@ -1,6 +1,5 @@
 ---
 output:
-  word_document: default
   tufte::tufte_handout:
     latex_engine: pdflatex
     pandoc_args:
@@ -9,6 +8,7 @@ output:
     - --include-before-body
     - includes/titlepage.tex
   html_document: default
+  word_document: default
 params:
   dep_san: DSGA
 ---

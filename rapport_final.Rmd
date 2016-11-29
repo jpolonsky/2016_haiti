@@ -54,15 +54,15 @@ These updated graphs were subsequently copied and pasted into a word document, a
         - broader trends should be analysed on a weekly, not daily basis
 
 - Automated analysis & reporting
-    - As the weekly report has a standardised format, and only needs to take into account updates to the dataset each week, the analysis and reporting were perfect candidates for automation. I wrote a script in the `R statistical language`^[[The R Project for Statistical Computing](https://www.r-project.org/)] to read in the data, analyse it, generate various tables, figures and maps, and output these into a standardised PDF report. The report takes ~20s to generate, rather than >1hr as was previously the case.
+    - As the weekly report has a standardised format, and only needs to take into account updates to the dataset each week, the analysis and reporting were perfect candidates for automation. I wrote a script in the `R statistical language`^[[The R Project for Statistical Computing](https://www.r-project.org/)] to read in the data, analyse it, generate various tables, figures and maps, and output these into a standardised PDF report. The report takes ~20 seconds to generate, rather than >1 hr as was previously the case.
     - This report, apporoved by MSPP at the departmental level, is shared with MSPP before the weekly surveillance meeting each Wednesday, and the responsibility of sharing the report is handed over to MSPP, as the data are of course owned by the country, not PAHO.
 
 ## Epidemiological context
 `r newthought('Extracts of the automated')` report are included in this report to demonstrate the outputs and to describe the current epidemiological situation regarding suspected cholera cases in the Département de la Grand’ Anse.
 
-\clearpage
+<!-- \clearpage -->
 
-```{r, fig.fullwidth = F, fig.cap = paste0("Tendance des cas de diarrhées aigues, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " Grand’Anse")}
+```{r, fig.fullwidth = T, fig.cap = paste0("Tendance des cas de diarrhées aigues, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " Grand’Anse")}
 DisplayResult('epicurve_by_day_all')
 ```
 
@@ -121,6 +121,23 @@ DisplayResult('bar_cases_by_commune')
 
 \clearpage
 
+### Additional sources of data
+`r newthought('Two additional sources of information')` are currently unavailable but as they become available in the course of the coming weeks, they should be analysed and incorporated into the regular information products and feed into regular surveillance discussions in DSGA:
+
+#### Line-listed data from health facilities
+Owing to the difficulty in collecting daily data from each facility, only aggregated data are currently collected. However, this leads to a loss of much important granularity of the data, e.g. prevenance, sex, treatment protocol and outcome, etc. This information is collected at the facilities and recorded in paper registers. The Centers for Disease Control and Prevention (CDC) are supporting MSPP and Medécins du Monde (MDM - the NGO supporting CTCs/UTCs in DSGA) in digitizing this information as line-lists. PAHO are providing some support to this process by photographing the registers during field visits, and providing these photos to MSPP/CDC for data entry. These data should be particularly used to identify demographic and geographic risk factors for suspected cholera transmission.
+
+#### Mobile clinics
+On 22nd November 2016, mobile clinics were scheduled to restart their activities having been interrupted by the hurricane and heavy rains which had greatly hampered access to outreach communities. PAHO were asked to review the proposed list of conditions under surveillance and database structure in preparation for resumption of activities. Once these data are collected and centralised in the database, they will be a vital source of information about conditions of epidemic potential, particularly in more inaccessible communities.
+
+
+## Field investigations
+`r newthought('One of the roles')` of the PAHO field epidemiology team is to participate in regular field investigations. During my deployment, we participated in 4 investigations, including alerts of community cases and deaths, reports of institutional deaths, and to participate in routine assessments of CTCs. 
+
+These are useful activities for a variety of reasons:
+- strengthening the relationship between PAHO and MSPP
+    - MSPP tend to rely on the availability of vehicles belongin to partner organisations in order to make the field visits.
+
 - need to rebuild surveillance
   + community based
   + line list to capture essential variables for analysis
@@ -140,11 +157,12 @@ DisplayResult('bar_cases_by_commune')
 
 
 ## Recommendations
-- food security
+- food security/malnutrition surveillance
+- malaria surveillance
 - ewars-type 
-- 
+- document possible weaknesses in surveillance system through capture-recapture study to estimate sensitivity at 2 levels.
 
 ## Annexes
-- Weekly epidemiological bulletin
+- protocol for investigation
 
 

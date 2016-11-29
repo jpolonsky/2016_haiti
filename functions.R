@@ -203,8 +203,10 @@ PlotHistWeekInst <- function(data = NULL, colour_scheme = 'Spectral'){
     mutate(inst = ifelse(inst == 'UTC', paste(inst, commune), inst)) %>% 
     mutate(epiweek = epitools::as.week(date)[['week']]) %>%
     group_by(commune, inst, epiweek, key) %>%
-    summarise(value = sum(value))
-  
+    summarise(value = sum(value)) %>% 
+    ungroup() %>% 
+    mutate(inst = stringr::str_wrap(inst, width = 15))
+    
   dat$inst <- forcats::fct_inorder(dat$inst)
   
   exclude <- 
@@ -222,7 +224,12 @@ PlotHistWeekInst <- function(data = NULL, colour_scheme = 'Spectral'){
     facet_wrap(~ inst) +
     labs(x = 'Epiweek 2016', y = '# cases') +
     theme_report +
-    theme(legend.position = 'bottom')
+    theme(
+      legend.position = 'bottom', 
+      legend.title.align = 0.5,
+      legend.key.size = unit(.2, 'cm')
+    ) +
+    guides(fill = guide_legend(title.position = 'top'))
   
 }
 
@@ -231,14 +238,14 @@ PlotHistWeekInst <- function(data = NULL, colour_scheme = 'Spectral'){
 # Table
 MakeTable <- function(data){
   
-  tmp <- 
-    data %>%
+  data %>%
     filter(!key == 'cas_hosp') %>%
     ungroup() %>% 
     mutate(inst = ifelse(inst == 'UTC', paste(inst, commune), inst)) %>% 
     group_by(commune, inst, key) %>% 
     summarise(value = sum(value)) %>% 
-    spread(key, value) %>% 
+    filter(value > 0) %>% 
+    spread(key, value, fill = 0) %>% 
     ungroup %>% 
     mutate(
       `% cas` = round(cas_vus/sum(cas_vus)*100, 1) %>% ifelse(is.nan(.), 0, .),
@@ -268,9 +275,6 @@ MakeTable <- function(data){
     unite(deces_inst, deces_inst:`% deces_inst`, sep = ' ') %>% 
     unite(deces_comm, deces_comm:`% deces_comm`, sep = ' ') %>% 
     set_names(c('Commune', 'UTC/CTC', 'Cas (%)', 'Décès inst. (%)', 'Décès comm. (%)', 'Total décès'))
-  
-  
-  return(tmp)
   
 }
 
