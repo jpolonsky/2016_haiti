@@ -1,16 +1,21 @@
 ---
+bibliography: refs.bib
+link-citations: yes
+header-includes:
+   - \usepackage{pdfpages}
 output:
   tufte::tufte_handout:
+    citation_package: natbib
     latex_engine: pdflatex
     pandoc_args:
     - --include-in-header
     - includes/styles.sty
     - --include-before-body
     - includes/titlepage_final_report.tex
-    citation_package: natbib
+    # keep_tex: true
+  pdf_document: default
   html_document: default
   word_document: default
-bibliography: refs.bib
 ---
 
 `r if(knitr::opts_knit$get("rmarkdown.pandoc.to") == 'docx') {'---\ntitle: Ouragan Matthew réponse, Département de la Grand’ Anse, Haiti\nsubtitle: Rapport sur le renforcement de la surveillance épidémiologique et gestion des données\nauthor: __Jonathan Polonsky__\n\n Epidemiologist, WHO Emergencies Programme\n---'}`
@@ -23,14 +28,15 @@ load('map/maps.RData')
 source('functions.R')
 
 library(tufte)
+library(bookdown)
 ```
 
 # Background
 `r newthought('On 4 October, Hurricane Matthew')` violently struck Haiti and resulted in the country’s largest humanitarian emergency since the 2010 earthquake. It caused extensive flooding and mudslides, damage to road infrastructure and buildings, as well as electricity and water shortages. The latest figures from the governmental Directorate of Civil Protection (DPC) of Haiti have so far confirmed 546 deaths and 438 injured as a result of the hurricane.
  
-Humanitarian needs are said to include access to a sufficient supply of quality water, education, shelter, child protection, health, and nutrition. Of the 1.4 million people who need humanitarian assistance, more than 40 per cent are children who are mainly in the Grand’Anse and Sud Departments
+Humanitarian needs are said to include access to a sufficient supply of quality water, education, shelter, child protection, health, and nutrition. Of the 1.4 million people who need humanitarian assistance, more than 40 per cent are children who are mainly in the Grand’Anse (DSGA) and Sud Departments
 
-In this context, I was deployed for just over 2 weeks as a field epidemiologist to Jeremie, the departmental capital of Grand’Anse, to analyse the situation and provide support to the PAHO country office in assisting the Ministère de la Santé Publique et de la Population (MSPP) in re-establishing/strengthening epidemic-prone disease surveillance in the affected areas.
+In this context, I was deployed for just over 2 weeks as a field epidemiologist to Jeremie, the departmental capital of DSGA, to analyse the situation and provide support to the PAHO country office in assisting the Ministère de la Santé Publique et de la Population (MSPP) in re-establishing/strengthening epidemic-prone disease surveillance in the affected areas.
 
 # Data collection, management, analysis & reporting
 `r newthought('An initial assessment of')` the ongoing data collection, management and reporting system in place for suspected cholera highlighted potential areas for rapid gains. The processes that feed into these components are described below:
@@ -38,10 +44,10 @@ In this context, I was deployed for just over 2 weeks as a field epidemiologist 
 ## Data collection & management
 `r newthought('Every day, the PAHO field epiemiologist')` or the MSPP departmental epidemiologist telephone each Cholera Treatment Centre/Unit (CTC/UTC) to get aggregated information read to them: # cases seen; # cases hospitalised; # institutional deaths; # community deaths. All of these are reported for two age groups: <5 and 5+ years. These phone calls were made twice per day - the first to report overnight changes, and a follow up call made later in the day to find out any further changes during the day. 
 
-The data are entered into an excel workbook. With each new day, eight new columns must be added (representing the four variables and two age groups for each). This workbook has data going back to 1st Jan 2012, and is now very wide (> 14,500 columns) and heavy (~ 40MB). The workbook is (sensibly) protected, but this means that analysing the data is cumbersome - the epidemiologist in place was double entering the data each day, once in this workbook and once in a seperate workbook covering just the days since the hurricane.
+The data are entered into an excel workbook. With each new day, eight new columns must be added (representing the four variables and two age groups for each). This workbook has data going back to 1st Jan 2012, and is now very wide (> 14,500 columns) and heavy (~ 40MB). The workbook is (sensibly) protected, but this means that analysing the data is cumbersome - the epidemiologist in place was double entering the data each day, once in this workbook and once in a separate workbook covering just the days since the hurricane.
 
 ## Analysis & reporting
-`r newthought('In order to analyse')` the data since hurricane Matthew, some figures had been created within this second, unprotected excel workbook, and each day these could be updated with the new data. However, because there were a large number of figures (some for overall analyses, and one each for the 17 operational CTCs), this was yet anotehr cumbersome process as the data rnage for each needed to be manually updated.
+`r newthought('In order to analyse')` the data since hurricane Matthew, some figures had been created within this second, unprotected excel workbook, and each day these could be updated with the new data. However, because there were a large number of figures (some for overall analyses, and one each for the 17 operational CTCs), this was yet another cumbersome process as the data range for each needed to be manually updated.
 
 These updated graphs were subsequently copied and pasted into a word document, along with a table of the updated data, and this was circulated each day to relevant partners.
 
@@ -56,29 +62,29 @@ These updated graphs were subsequently copied and pasted into a word document, a
         - broader trends should be analysed on a weekly, not daily basis
 
 - Automated analysis & reporting
-    - As the weekly report has a standardised format, and only needs to take into account updates to the dataset each week, the analysis and reporting were perfect candidates for automation. I wrote a script in the `R statistical language`^[[The R Project for Statistical Computing](https://www.r-project.org/)] to read in the data, analyse it, generate various tables, figures and maps, and output these into a standardised PDF report. The report takes ~20 seconds to generate, rather than >1 hr as was previously the case.
-    - This report, apporoved by MSPP at the departmental level, is shared with MSPP before the weekly surveillance meeting each Wednesday, and the responsibility of sharing the report is handed over to MSPP, as the data are of course owned by the country, not PAHO.
+    - As the weekly report has a standardised format, and only needs to take into account updates to the dataset each week, the analysis and reporting were perfect candidates for automation. I wrote a script in the `R statistical language`^[[The R Project for Statistical Computing](https://www.r-project.org/)] to read in the data, analyse it, generate various tables, figures and maps, and output these into a standardised PDF report. The report takes ~20 seconds to generate, rather than >1 hour as was previously the case.
+    - This report, approved by MSPP at the departmental level, is shared with MSPP before the weekly surveillance meeting each Wednesday, and the responsibility of sharing the report is handed over to MSPP, as the data are of course owned by the country, not PAHO.
 
 # Epidemiological context
 `r newthought('Extracts of the automated')` report are included in this report to demonstrate the outputs and to describe the current epidemiological situation regarding suspected cholera cases in the Département de la Grand’ Anse.
 
-<!-- \clearpage -->
-
-```{r, fig.fullwidth = T, fig.cap = paste0("Tendance des cas de diarrhées aigues, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " Grand’Anse")}
+```{r epicurve_all, fig.fullwidth = TRUE, fig.height=2, fig.cap = paste0("Tendance des cas de diarrhées aigues, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " Grand’Anse (données partielles).")}
 DisplayResult('epicurve_by_day_all')
 ```
+
+Following a rapid increase in cases of suspected cholera following Hurricane Matthew, from fewer than 10 cases per day to a mean of around 50 cases per day until the middle of November, after which time the cases steadily declined to around 20 cases per day during epiweek 47 (Figure \ref{fig:epicurve_all}).
 
 \clearpage
 
 \begin{fullwidth}
 \makeatletter\setlength\hsize{\@tufte@fullwidth}\setlength\linewidth{\@tufte@fullwidth}\let\caption\@tufte@orig@caption\makeatother
 \footnotesize
-```{r, tab_overview}
+```{r tab_overview}
 if(nrow(DisplayResult('epitable'))>1) {rws <- seq(1, nrow(DisplayResult('epitable')) - 1, by = 2)}
 
 DisplayResult('epitable') %>% 
   xtable::xtable(
-    caption = paste0("Répartition des cas de diarrhées aigues par CTC/UTC, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " Grand’Anse"), 
+    caption = paste0("Répartition des cas de diarrhées aigues par CTC/UTC, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " Grand’Anse (données partielles)."), 
     digits = 0, label = "tab_overview", align = 'lllrrrr'
   ) %>% 
   print(booktabs = TRUE, caption.placement = "top", add.to.row = list(pos = as.list(rws), command = rep("\\rowcolor{whoblue!15}", length(rws))), include.rownames = FALSE, comment = FALSE, tabular.environment = 'longtable', floating = FALSE)
@@ -92,30 +98,36 @@ if(knitr::opts_knit$get("rmarkdown.pandoc.to") %in% c('docx', 'html')) knitr::ka
 
 \clearpage
 
-```{r, fig.fullwidth = TRUE, fig.height=5, fig.cap = paste0("Répresentation du taux d'attaque des cas de diarrhées aigues par 10,000 personnes, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " par commune, Grand’Anse")}
+```{r map, fig.fullwidth = TRUE, fig.height=5, fig.cap = paste0("Répresentation du taux d'attaque des cas de diarrhées aigues par 10,000 personnes, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " par commune, Grand’Anse")}
 v1 <- grid::viewport(width = 1, height = 1, x = 0.5, y = 0.5) # plot area for the main map
 v2 <- grid::viewport(width = 0.3, height = 0.2, x = 0.65, y = 0.68) # plot area for the inset map
 DisplayResult('map_main') %>% print(vp = v1)
 DisplayResult('map_inset') %>% print(vp = v2)
 ```
 
+The attack rate of suspected cholera follows a heterogeneous distribution by geographic location of treatment facility, with higher attack rates in the west of DSGA compared with those in the east (Figure \ref{fig:map}). The highest estimated attack rates since the hurricane have been in Anse-d'Hainhault and Moron communes (population estimations based on 2015 census data).
+
 \clearpage
 
-```{r, fig.fullwidth = TRUE, fig.height=4, fig.cap = paste0("Tendance des cas de diarrhées aigues, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " par commune, Grand’Anse")}
+```{r epicurve_commune, fig.fullwidth = TRUE, fig.height=4, fig.cap = paste0("Tendance des cas de diarrhées aigues, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " par commune, Grand’Anse")}
 DisplayResult('epicurve_by_week_commune')
 ```
 
+The peak incidence of suspected cholera in Les Irois, Anse-d'Hainhault, Moron and Chambellan communes occurred in epiweek 41-43, 1-3 weeks post-hurricane, with the peak in Jérémie occurring in epiweek 44 (Figure \ref{fig:epicurve_commune}). Abricots and Dame-Marie communes experienced later peaks, but the absolute number of cases in these communes was considerably lower than in the other communes mentioned above.
+
 \clearpage
 
-```{r, fig.fullwidth = TRUE, fig.height=4, fig.cap = paste0("Tendance des cas de diarrhées aigues, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " par CTC, Grand’Anse")}
+```{r epicurve_inst, fig.fullwidth = TRUE, fig.height=4, fig.cap = paste0("Tendance des cas de diarrhées aigues, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " par CTC, Grand’Anse")}
 DisplayResult('epicurve_by_week_inst')
 ```
 
 \clearpage
 
-```{r, fig.fullwidth = F, fig.cap = paste0("Répartition des cas de diarrhées aigues par commune, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " Grand’Anse")}
+```{r pie, fig.fullwidth = F, fig.cap = paste0("Répartition des cas de diarrhées aigues par commune, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " Grand’Anse")}
 DisplayResult('pie_cases_by_commune')
 ```
+
+Approximately 40% of cases have presented in Jérémie commune, 20% in Anse-d'Hainhault commune, 15% in Moron commune, with the remaining ~25% divided between the remaining communes (Figure \ref{fig:pie}). Only Corail commune has not reported treating any cases since the Hurricane, but this may reflect the heterogeneous geographic availability of CTCs, with some patients seeking treatment in communes other than those in which they reside.
 
 ```{r, fig.margin = T, fig.cap = paste0("Répartition des cas de diarrhées aigues par tranche d'age, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " par commune, Grand’Anse")}
 DisplayResult('bar_cases_by_commune')
@@ -127,23 +139,35 @@ DisplayResult('bar_cases_by_commune')
 `r newthought('Two additional sources of information')` are currently unavailable but as they become available in the course of the coming weeks, they should be analysed and incorporated into the regular information products and feed into regular surveillance discussions in DSGA:
 
 ### Line-listed data from health facilities
-Owing to the difficulty in collecting daily data from each facility, only aggregated data are currently collected. However, this leads to a loss of much important granularity of the data, e.g. prevenance, sex, treatment protocol and outcome, etc. This information is collected at the facilities and recorded in paper registers. The Centers for Disease Control and Prevention (CDC) are supporting MSPP and Medécins du Monde (MDM - the NGO supporting CTCs/UTCs in DSGA) in digitizing this information as line-lists. PAHO are providing some support to this process by photographing the registers during field visits, and providing these photos to MSPP/CDC for data entry. These data should be particularly used to identify demographic and geographic risk factors for suspected cholera transmission.
+Owing to the difficulty in collecting daily data from each facility, only aggregated data are currently collected. However, this leads to a loss of much important granularity of the data, e.g. provenance, sex, treatment protocol and outcome, etc. This information is collected at the facilities and recorded in paper registers. The Centers for Disease Control and Prevention (CDC) are supporting MSPP and Médecins du Monde (MDM - the NGO supporting CTCs/UTCs in DSGA) in digitizing this information as line-lists. PAHO are providing some support to this process by photographing the registers during field visits, and providing these photos to MSPP/CDC for data entry. These data should be particularly used to identify demographic and geographic risk factors for suspected cholera transmission.
 
 ### Mobile clinics
 On 22nd November 2016, mobile clinics were scheduled to restart their activities having been interrupted by the hurricane and heavy rains which had greatly hampered access to outreach communities. PAHO were asked to review the proposed list of conditions under surveillance and database structure in preparation for resumption of activities. Once these data are collected and centralised in the database, they will be a vital source of information about conditions of epidemic potential, particularly in more inaccessible communities.
 
 
 # Field investigations
-`r newthought('One of the roles')` of the PAHO field epidemiology team is to participate in regular field investigations. During my deployment, we participated in 4 investigations, including alerts of clusters of community cases and deaths, reports of institutional deaths, and to participate in routine assessments of CTCs. These are useful activities for a variety of reasons:
+`r newthought('One of the roles')` of the PAHO field epidemiology team is to participate in regular field investigations. During my deployment, we participated in 4 investigations, including alerts of clusters of community cases and deaths (see [`Annex 1 & 2`](#annexes)), reports of institutional deaths, and to participate in routine assessments of CTCs. These are useful activities for a variety of reasons:
+
 - strengthening the relationship between PAHO and MSPP
-    - MSPP tend to rely on the availability of vehicles belongin to partner organisations in order to make the field visits.
+    - MSPP tend to rely on the availability of vehicles belonging to partner organisations in order to make the field visits.
+\begin{marginfigure}
+\includegraphics{figure/img1.jpg}
+\caption{Field investigation of reported community deaths conducted by joint MSPP, PAHO and CDC epidemiology team, Dame Marie commune, Grand'Anse.}
+\end{marginfigure}
+
 - multidisciplinary visits for rationalising resources - prevents repeated trips to same locations and added burden to staff at CTCs
 - collecting and comparing data in registers with what is reported
+\begin{marginfigure}
+\includegraphics{figure/img2.jpg}
+\caption{PAHO epidemiologist Dr. Natael Fénelon reviewing CTC registers, Moron commune, Grand'Anse.}
+\end{marginfigure}
 
 However, there is a sense that the approach could be more systematic and to some extent predictable. 
     - Under what conditions should an investigation/field visit be launched?
     - what activities should be undertaken during each visit?
-One important document drafted by the cholera response team was the `Protocole d’investigation d’une flambée de cholera` (see `Annex`). Similar documents and standard operating procedures (SOPs) that detail tasks and actvities for a variety of situations would be useful.
+One important document drafted by the cholera response team was the `Protocole d’investigation d’une flambée de cholera` (see [`Annex 3`](#annexes)). Similar documents and standard operating procedures (SOPs) that detail tasks and activities for a variety of situations would be useful.
+
+\clearpage
 
 # Recommendations
 - Continue to support MSPP in field epidemiological investigations, but under more clearly defined SOPs.
@@ -151,21 +175,87 @@ One important document drafted by the cholera response team was the `Protocole d
 - In the longer term, there is a need to transform the cholera surveillance system as the system currently in place is not fit for purpose. An improvement would be to ensure that:
     - the system is community based
     - information is collected at the individual level (i.e. line list to capture essential variables for analysis)
-    - the data entry, compilation, analysis and reporting are streamlined, ideally making use of the WHO-led Early Warning Alert and Response System (EWARS) which is designed for such a context
-
-- 2-level sensitivity analysis [@Gignoux2015; @Braeye2016]
-       - from community to CTC
-       - from CTC to central level
-       - develop methodology for this
-- document possible weaknesses in surveillance system through capture-recapture study to estimate sensitivity at 2 levels.
+    - the data entry, compilation, analysis and reporting are streamlined, ideally making use of the WHO-led EWARS^[[Early Warning Alert and Response System](http://www.ewars-project.org)] which is designed for such a context.
+- Possible weaknesses in the surveillance system should be investigated and documented as an initial part of such a process in order to build an evidence-base for the need for modifications, perhaps through analyses demonstrating timeliness and completeness of reporting, and light-weight capture-recapture studies (as described elsewhere [@Gignoux2015; @Braeye2016]) in targeted départements, to estimate the sensitivity of the surveillance system at 2 levels:
+   - from the community level to the facility/CTC level (i.e. what proportion of suspected cases are not detected by the surveillance system)
+   - from the facility/CTC level to the departmental/central level (i.e. do the data reported by the facilities accurately reflect what has been observed)
 - It is also very important to not only focus on cholera response post Hurricane Matthew, as there are multiple other diseases and conditions of great importance in the département. Some important outstanding questions include:
     - what has been the impact on primary health care service delivery (e.g. Basic Emergency Obstetric Care)?
     - malaria surveillance 
         - DSGA is considered one of the areas of greatest malaria incidence in Haiti. Has there been an impact on malaria incidence and access to treatment?
     - food security/malnutrition surveillance is an important consideration
-        - Hurricane Matthew destroyed a large proportion of the crops, livestock, etc in the département, and a potentially serious impact on food security and concommitant impact on acute malnutrition should be anticipated. In this case, it may be prudent to establish some form of community-based malnutrition surveillance to early-detect deteriorations in the nutritional status of the population, particularly among children aged under 5. (Ref - Caleo, [@Caleo2012; @Polonsky2013a], etc)
+        - Hurricane Matthew destroyed a large proportion of the crops, livestock, etc in the département, and a potentially serious impact on food security and concomitant impact on acute malnutrition should be anticipated. In this case, it may be prudent to establish some form of community-based malnutrition surveillance to early-detect deteriorations in the nutritional status of the population, particularly among children aged under 5. Examples and methods for such systems have been described elsewhere (@Caleo2012; @Polonsky2013a).
+
+\clearpage
 
 # Annexes
-- protocol for investigation
+## Annex 1 - Rapport d’investigation de cas de décès communautaire par cholera a Desormeaux, Grand’Anse
+
+<!-- \includepdf[pages={1-}, scale=0.8]{annex/inv_desormeaux.pdf} -->
+```{r, fig.fullwidth = T}
+cat('\\begin{figure*}\n\\includegraphics[page=1, width=0.8\\textwidth]{annex/inv_desormeaux.pdf}\n\\end{figure*}')
+# cat('\\includepdf[pages={1-},scale=0.8]{annex/inv_desormeaux.pdf}')
+```
+
+\clearpage
+
+```{r, fig.fullwidth = T}
+cat('\\begin{figure*}\n\\includegraphics[page=2, width=0.8\\textwidth]{annex/inv_desormeaux.pdf}\n\\end{figure*}')
+```
+
+\clearpage
+
+```{r, fig.fullwidth = T}
+cat('\\begin{figure*}\n\\includegraphics[page=3, width=0.8\\textwidth]{annex/inv_desormeaux.pdf}\n\\end{figure*}')
+```
+
+\clearpage
+
+## Annex 2 - Rapport d’investigation de la flambée du choléra, Gond’ayer, Grand’Anse
+
+<!-- \includepdf[pages={1-}, scale=0.8]{annex/inv_gond_ayer.pdf} -->
+```{r, fig.margin = T}
+cat('\\begin{figure*}\n\\includegraphics[page=1, width=0.8\\textwidth]{annex/inv_gond_ayer.pdf}\n\\end{figure*}')
+```
+
+\clearpage
+
+```{r, fig.margin = T}
+cat('\\begin{figure*}\n\\includegraphics[page=2, width=0.8\\textwidth]{annex/inv_gond_ayer.pdf}\n\\end{figure*}')
+```
+
+\clearpage
+
+```{r, fig.margin = T}
+cat('\\begin{figure*}\n\\includegraphics[page=3, width=0.8\\textwidth]{annex/inv_gond_ayer.pdf}\n\\end{figure*}')
+```
+
+\clearpage
+
+```{r, fig.margin = T}
+cat('\\begin{figure*}\n\\includegraphics[page=4, width=0.8\\textwidth]{annex/inv_gond_ayer.pdf}\n\\end{figure*}')
+```
+
+\clearpage
+
+```{r, fig.margin = T}
+cat('\\begin{figure*}\n\\includegraphics[page=5, width=0.8\\textwidth]{annex/inv_gond_ayer.pdf}\n\\end{figure*}')
+```
+
+\clearpage
+
+```{r, fig.margin = T}
+cat('\\begin{figure*}\n\\includegraphics[page=6, width=0.8\\textwidth]{annex/inv_gond_ayer.pdf}\n\\end{figure*}')
+```
+
+\clearpage
+
+## Annex 3 - Protocole d’investigation d’une flambée de cholera
+
+```{r, fig.fullwidth = TRUE}
+cat('\\begin{figure*}\n\\includegraphics[width=0.8\\textwidth]{annex/inv_protocole.pdf}\n\\end{figure*}')
+```
+
+\clearpage
 
 # References

@@ -97,7 +97,7 @@ MergeAges <- function(data = NULL){
 }
 
 PlotHistDay <- function(data = NULL){
-  
+  # browser()
   data %>% 
     filter(key %in% 'cas_vus') %>% 
     group_by(date) %>% 

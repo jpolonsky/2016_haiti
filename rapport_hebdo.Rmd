@@ -1,5 +1,6 @@
 ---
 output:
+  word_document: default
   tufte::tufte_handout:
     latex_engine: pdflatex
     pandoc_args:
@@ -8,7 +9,6 @@ output:
     - --include-before-body
     - includes/titlepage.tex
   html_document: default
-  word_document: default
 params:
   dep_san: DSGA
 ---
@@ -75,17 +75,7 @@ df_nested <-
   )
 ```
 
-# Analyse des données de diarrhées aigues:
-
-```{r, fig.fullwidth = TRUE, fig.cap = paste0("Tendance des cas de diarrhées aigues, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " Grand’Anse (données partielles).")}
-DisplayResult('epicurve_by_day_all')
-```
-
-```{r, fig.fullwidth = F, fig.height = 3, fig.cap = paste0("Répartition des cas de diarrhées aigues par commune, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " Grand’Anse (données partielles).")}
-DisplayResult('pie_cases_by_commune')
-```
-
-\clearpage
+<!-- # Analyse des données de diarrhées aigues: -->
 
 \begin{fullwidth}
 \makeatletter\setlength\hsize{\@tufte@fullwidth}\setlength\linewidth{\@tufte@fullwidth}\let\caption\@tufte@orig@caption\makeatother
@@ -102,13 +92,16 @@ DisplayResult('epitable') %>%
 ```
 \end{fullwidth}
 
-
 ```{r}
 # print table if output is word or html document
 if(knitr::opts_knit$get("rmarkdown.pandoc.to") %in% c('docx', 'html')) knitr::kable(DisplayResult('epitable'))
 ```
 
-\newpage
+```{r, fig.fullwidth = TRUE, fig.height=2, fig.cap = paste0("Tendance des cas de diarrhées aigues, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " Grand’Anse (données partielles).")}
+DisplayResult('epicurve_by_day_all')
+```
+
+\clearpage
 
 ```{r, fig.fullwidth = TRUE, fig.height=5, fig.cap = paste0("Répresentation du taux d'attaque des cas de diarrhées aigues par 10,000 personnes, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " par commune, Grand’Anse")}
 v1 <- grid::viewport(width = 1, height = 1, x = 0.5, y = 0.5) # plot area for the main map
@@ -117,22 +110,27 @@ DisplayResult('map_main') %>% print(vp = v1)
 DisplayResult('map_inset') %>% print(vp = v2)
 ```
 
-\newpage
+\clearpage
 
 ```{r, fig.fullwidth = TRUE, fig.height=3, fig.cap = paste0("Tendance des cas de diarrhées aigues, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " par commune, Grand’Anse (données partielles).")}
 DisplayResult('epicurve_by_week_commune')
 ```
 
-\newpage
-
-```{r, fig.fullwidth = F, fig.height=3, fig.cap = paste0("Répartition des cas de diarrhées aigues par tranche d'age, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " par commune, Grand’Anse (données partielles).")}
-DisplayResult('bar_cases_by_commune')
-```
-
-\newpage
+\clearpage
 
 ```{r, fig.fullwidth = TRUE, fig.height=4, fig.cap = paste0("Tendance des cas de diarrhées aigues, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " par CTC, Grand’Anse (données partielles).")}
 # by week & inst
 DisplayResult('epicurve_by_week_inst')
 ```
 
+\clearpage
+
+```{r, fig.fullwidth = F, fig.cap = paste0("Répartition des cas de diarrhées aigues par commune, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " Grand’Anse")}
+DisplayResult('pie_cases_by_commune')
+```
+
+```{r, fig.margin = T, fig.cap = paste0("Répartition des cas de diarrhées aigues par tranche d'age, ", DisplayResult('data')$date %>% min %>% format('%d %b %Y'), " - ", DisplayResult('data')$date %>% max %>% format('%d %b %Y'), " par commune, Grand’Anse")}
+DisplayResult('bar_cases_by_commune')
+```
+
+\clearpage

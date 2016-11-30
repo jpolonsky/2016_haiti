@@ -13,6 +13,12 @@ Source: CRAN
 Version: 0.5-1
 Hash: 375869004db963f9915f2b8a49b4a718
 
+Package: DT
+Source: CRAN
+Version: 0.2
+Hash: 36b032203797956fedad5a25055016a9
+Requires: htmltools, htmlwidgets, magrittr
+
 Package: R6
 Source: CRAN
 Version: 2.2.0
@@ -47,6 +53,12 @@ Package: bitops
 Source: CRAN
 Version: 1.0-6
 Hash: 67d0775189fd0041d95abca618c5c07e
+
+Package: bookdown
+Source: CRAN
+Version: 0.3
+Hash: 0c77f8bbcb8b4c96c6630f4a13d17c70
+Requires: htmltools, knitr, rmarkdown, yaml
 
 Package: broom
 Source: CRAN
@@ -152,6 +164,12 @@ Source: CRAN
 Version: 0.3.5
 Hash: 49415ab4718e9d37c7ddf74988493c23
 Requires: Rcpp, digest
+
+Package: htmlwidgets
+Source: CRAN
+Version: 0.8
+Hash: e7a3c80acddc2412f96d616949e40bb8
+Requires: htmltools, jsonlite, yaml
 
 Package: httpuv
 Source: CRAN
