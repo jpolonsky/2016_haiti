@@ -1,6 +1,5 @@
 ---
 output:
-  word_document: default
   tufte::tufte_handout:
     latex_engine: pdflatex
     pandoc_args:
@@ -9,8 +8,9 @@ output:
     - --include-before-body
     - includes/titlepage.tex
   html_document: default
+  word_document: default
 params:
-  dep_san: DSGA
+  dep_san: DSS
 ---
 
 `r if(knitr::opts_knit$get("rmarkdown.pandoc.to") == 'docx') {'---\ntitle: Situation épidémiologique de la diarrhée aiguë après l’ouragan Matthew\nsubtitle: Département de la Grand’ Anse, Haiti\n---'}`
@@ -19,7 +19,7 @@ params:
 knitr::opts_chunk$set(cache=FALSE, message=FALSE, echo=FALSE, warning=FALSE, results='asis')
 # knitr::knit_hooks$set(inline = function(x) if (is.numeric(x)) round(x, 1) )
 
-# load('ws.RData')
+load('ws.RData')
 load('map/maps.RData')
 source('functions.R')
 
@@ -46,33 +46,33 @@ list_depts <- params$dep_san
 # hti_adm3 <- raster::getData('GADM', country = 'HTI', level = 3)
 map_shps <- map(c(hti_adm1, hti_adm3), PrepareMapData) %>% set_names(c('adm1', 'adm3'))
 
-df_nested <-
-  list_depts %>% 
-  map(WrangleData) %>% 
-  set_names(list_depts) %>% 
-  bind_rows() %>% 
-  nest(-c(dept), .key = data_by_age) %>%
-  mutate(
-    # data sets
-    data = map(data_by_age, MergeAges),
-    data_pie = map(data_by_age, WrangleDataPie, variable = 'cas_vus'),
-    # data_map = map2(data, dept, WrangleDataMapPopAR),
-    data_map = list(data, dept = dept, df_map = list(map_shps$adm3)) %>% pmap(WrangleDataMapPopAR),
-    # table
-    epitable = map(data, MakeTable),
-    # plots
-    ## epicurves
-    epicurve_by_day_all = map(data, PlotHistDay),
-    epicurve_by_week_all = map(data, PlotHistWeek),
-    epicurve_by_week_commune = map(data, PlotHistWeekCommune),
-    epicurve_by_week_inst = map(data, PlotHistWeekInst),
-    ## proportion plots
-    pie_cases_by_commune = map(data_pie, PlotPie, colour_scheme = 'RdBu', key = 'commune'),
-    bar_cases_by_commune = map(data_pie, PlotBar, colour_scheme = 'RdBu', facet_var = 'commune'),
-    ## map
-    map_main = list(data_map, dept = dept, df_map = list(hti_adm3), key = 'ar') %>% pmap(MakeMapMain),
-    map_inset = list(data_map, dept = dept, df_map = list(hti_adm3)) %>% pmap(MakeMapInset)
-  )
+# df_nested <-
+#   list_depts %>% 
+#   map(WrangleData) %>% 
+#   set_names(list_depts) %>% 
+#   bind_rows() %>% 
+#   nest(-c(dept), .key = data_by_age) %>%
+#   mutate(
+#     # data sets
+#     data = map(data_by_age, MergeAges),
+#     data_pie = map(data_by_age, WrangleDataPie, variable = 'cas_vus'),
+#     # data_map = map2(data, dept, WrangleDataMapPopAR),
+#     data_map = list(data, dept = dept, df_map = list(map_shps$adm3)) %>% pmap(WrangleDataMapPopAR),
+#     # table
+#     epitable = map(data, MakeTable),
+#     # plots
+#     ## epicurves
+#     epicurve_by_day_all = map(data, PlotHistDay),
+#     epicurve_by_week_all = map(data, PlotHistWeek),
+#     epicurve_by_week_commune = map(data, PlotHistWeekCommune),
+#     epicurve_by_week_inst = map(data, PlotHistWeekInst),
+#     ## proportion plots
+#     pie_cases_by_commune = map(data_pie, PlotPie, colour_scheme = 'RdBu', key = 'commune'),
+#     bar_cases_by_commune = map(data_pie, PlotBar, colour_scheme = 'RdBu', facet_var = 'commune'),
+#     ## map
+#     map_main = list(data_map, dept = dept, df_map = list(hti_adm3), key = 'ar') %>% pmap(MakeMapMain),
+#     map_inset = list(data_map, dept = dept, df_map = list(hti_adm3)) %>% pmap(MakeMapInset)
+#   )
 ```
 
 <!-- # Analyse des données de diarrhées aigues: -->

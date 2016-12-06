@@ -243,8 +243,11 @@
 %}}}
 %{{{ --- Captions ---------------------
 
-\setbeamertemplate{caption label separator}{: }
-\setbeamertemplate{caption}[numbered]
+%\setbeamertemplate{caption label separator}{: }
+%\setbeamertemplate{caption}[numbered]
+
+% The below turns off figure captions (need to comment out code above)
+\setbeamertemplate{caption}{\insertcaption} 
 
 %}}}
 %{{{ --- Footline/footnote ------------

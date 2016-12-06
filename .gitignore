@@ -2,3 +2,6 @@ data
 OPS
 .Rproj.user
 packrat/lib*/
+coc.pdf
+*.jpg
+*.png

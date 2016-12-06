@@ -1,0 +1,187 @@
+---
+title: "Countries of concern"
+subtitle: "Cholera epidemiology post-Hurricane Matthew, Département de la Grand'Anse, Haiti"
+author: "Jonathan Polonsky - WHO/WHE/HIM"
+date: '\today'
+fontsize: 11pt
+output:
+  beamer_presentation:
+    theme: m
+    slide_level: 2
+    pandoc_args: ['--latex-engine=xelatex']
+    includes:
+      in_header: includes/header.tex
+      after_body: includes/footer.tex
+# header-includes:
+#    - \usepackage{pdfpages}
+params:
+  dep_san: DSGA
+---
+
+```{r, cache=FALSE, message=FALSE, echo=FALSE, warning=FALSE, results='hide'}
+knitr::opts_chunk$set(cache=FALSE, message=FALSE, echo=FALSE, warning=FALSE, results='asis')
+
+load('ws.RData')
+load('map/maps.RData')
+source('functions.R')
+
+list_db_paths <- dir('data', full.names = TRUE)
+list_depts <- params$dep_san
+
+map_shps <- map(c(hti_adm1, hti_adm3), PrepareMapData) %>% set_names(c('adm1', 'adm3'))
+```
+
+# Background
+## Overview
+- 4 October, Hurricane Matthew struck Haiti 
+    - resulted in largest *humanitarian* emergency since 2010 earthquake
+        - ~ 1.4m people in need of humanitarian assistance
+        - extensive flooding & mudslides
+        - damage to road infrastructure & buildings
+        - electricity and water shortages
+- 546 confirmed deaths, 128 missing, 438 injured
+- 65 HF affected
+
+## Hurricane Matthew
+![](coc/path1.png)
+
+## Hurricane Matthew
+![](coc/path2.png)
+
+## Hurricane Matthew - impact
+![](coc/impact1.png)
+
+## Hurricane Matthew - impact
+![](coc/impact2.png)
+
+## Hurricane Matthew - impact
+![](coc/damage_town1.jpg)
+
+## Hurricane Matthew - impact
+![](coc/damage_town2.jpg)
+
+# Epidemiology
+## Acute watery diarrhoea epicurve by day
+- ~ 8000 AWD cases
+
+```{r}
+DisplayResult('epicurve_by_day_all')
+```
+
+
+## AWD attack rates by commune
+```{r}
+v1 <- grid::viewport(width = 1, height = 1, x = 0.5, y = 0.5) # plot area for the main map
+v2 <- grid::viewport(width = 0.3, height = 0.2, x = 0.65, y = 0.68) # plot area for the inset map
+DisplayResult('map_main') %>% print(vp = v1)
+DisplayResult('map_inset') %>% print(vp = v2)
+```
+
+## AWD burden by commune
+```{r}
+DisplayResult('pie_cases_by_commune')
+```
+
+## AWD epicurve by commune
+```{r}
+DisplayResult('epicurve_by_week_commune')
+```
+
+## AWD epicurve by institution
+```{r}
+DisplayResult('epicurve_by_week_inst')
+```
+
+# Activities
+## Coordination
+Co-chairing the weekly surveillance and lab meetings
+
+## Coordination
+![](coc/office.jpg)
+
+## Vaccination campaign
+- 8-18 November
+- 736,421 out of 817,000 targeted (~90%)
+
+![](coc/vaccine.jpg)
+
+
+## Field investigations
+- Alerts of clusters of community cases & deaths
+- Reports of institutional deaths
+- Routine assessments of CTCs
+- Useful for various reasons:
+    - early-detection and response to alerts
+    - collecting & comparing data in registers w/ what is reported
+    - community contact (aquatabs, PH messaging, etc)
+    - strengthening relationship b/n PAHO and MSPP
+    – MSPP rely on partner vehicles
+
+## Field investigations
+![](coc/damage_trees1.jpg)
+
+## Field investigations
+![](coc/damage_trees2.jpg)
+
+## Field investigations
+![](coc/river.jpg)
+
+## Field investigations
+![](coc/stretcher.jpg)
+
+## Field investigations
+![](coc/stuck.jpg)
+
+## Field investigations
+![](coc/investigation.jpg)
+
+## Field investigations
+![](coc/registers1.jpg)
+
+## Field investigations
+![](coc/registers2.jpg)
+
+## Data management, analysis & reporting
+- Existing system not fit for purpose
+    - 2x daily data collection
+    - excel as database
+        - 8 new columns per day since Jan 2012
+        - \>14,500 columns!
+        - very heavy: ~40MB, takes several minutes to open
+    - burden of reporting imposes aggregation
+    - data analysis in excel
+    - PAHO epi working until midnight every night to enter data and generate reports
+
+# Recommendations
+## Investigations
+- Continue to support MSPP in field epidemiological investigations, but under more clearly defined SOPs.
+
+## Data management, analysis & reporting
+- Continue to support weekly surveillance activities through data compilation, analysis, reporting and coordination.
+- Immediate term 
+    - dramatically reduce daily burden on epi staff through minimised data collection process & automated data analysis & reporting
+
+# Demonstration of automated analysis & reporting system
+
+## Data management, analysis & reporting cont'd
+- Weaknesses in surv. system investigated & documented
+    - analyses demonstrating timeliness & completeness of reporting
+    - capture-recapture studies to estimate sensitivity at 2 levels:
+        - from **community** level to the **facility/CTC** level (i.e. what % of suspected cases are not detected by the surveillance system)
+        - from **facility/CTC** level to the **departmental/central** level (i.e. do the data reported by the facilities accurately reflect what has been observed)
+- Longer term - transform cholera surveillance system
+    - (active) community-based
+    - individual level information
+        - i.e. line list to capture essential variables for analysis
+    - streamlined data entry, compilation, analysis & reporting (**EWARS**)
+
+## Broader epidemiological profile
+- Not only focus on cholera response post Hurricane Matthew
+    - impact on primary health care service delivery (e.g. Basic Emergency Obstetric Care)?
+    - malaria surveillance (areas of greatest malaria incidence in Haiti)
+        - what has been impact on malaria incidence & access to treatment?
+    - bloody diarrhoea; diptheria
+    - food security/malnutrition surveillance
+        - large % of crops & livestock destroyed
+        - serious impact on food security and acute malnutrition should be anticipated
+        - establish community-based malnutrition surveillance to early-detect deteriorations in nutritional status
