@@ -1,17 +1,24 @@
 ---
 title: "Countries of concern"
-subtitle: "Cholera epidemiology post-Hurricane Matthew, Département de la Grand'Anse, Haiti"
-author: "Jonathan Polonsky - WHO/WHE/HIM"
+subtitle: | 
+  | Cholera epidemiology post-Hurricane Matthew, 
+  | Département de la Grand'Anse, Haiti
+author: |
+  | Jonathan Polonsky
+  | WHO/WHE/HIM
 date: '\today'
 fontsize: 11pt
 output:
   beamer_presentation:
-    theme: m
+    theme: darkm
     slide_level: 2
+    incremental: true
     pandoc_args: ['--latex-engine=xelatex']
+    df_print: kable
     includes:
-      in_header: includes/header.tex
-      after_body: includes/footer.tex
+      in_header: coc/header.tex
+      after_body: coc/footer.tex
+    template: includes/mint_beamer.tex
 # header-includes:
 #    - \usepackage{pdfpages}
 params:
@@ -91,6 +98,9 @@ DisplayResult('epicurve_by_week_commune')
 ```{r}
 DisplayResult('epicurve_by_week_inst')
 ```
+
+## Projected evolution
+![](coc/epicentre.png)
 
 # Activities
 ## Coordination
