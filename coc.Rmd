@@ -19,8 +19,6 @@ output:
       in_header: coc/header.tex
       after_body: coc/footer.tex
     template: includes/mint_beamer.tex
-# header-includes:
-#    - \usepackage{pdfpages}
 params:
   dep_san: DSGA
 ---
