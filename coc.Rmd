@@ -3,6 +3,7 @@ title: "Countries of concern"
 subtitle: | 
   | Cholera epidemiology post-Hurricane Matthew, 
   | Département de la Grand'Anse, Haiti
+  | 1-25 Nov 2016
 author: |
   | Jonathan Polonsky
   | WHO/WHE/HIM
